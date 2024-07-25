@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class MusicServiceApiApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(MusicServiceApiApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(MusicServiceApiApplication.class, args);
+    }
 
 }
