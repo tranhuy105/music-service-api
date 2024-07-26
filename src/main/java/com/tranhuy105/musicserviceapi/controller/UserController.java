@@ -2,7 +2,10 @@ package com.tranhuy105.musicserviceapi.controller;
 
 import com.tranhuy105.musicserviceapi.dto.UserDto;
 import com.tranhuy105.musicserviceapi.model.User;
+import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
+import com.tranhuy105.musicserviceapi.repository.api.PlaylistRepository;
 import com.tranhuy105.musicserviceapi.service.UserService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final MetadataRepository metadataRepository;
+    private final PlaylistRepository playlistRepository;
 
     @GetMapping
     public ResponseEntity<User> getAuthUserInfo(Authentication authentication) {
@@ -27,8 +32,17 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @GetMapping("/test/{id}")
+    public ResponseEntity<?> testparam(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                playlistRepository.findPlaylistById(id)
+        );
+    }
+
     @GetMapping("/test")
     public ResponseEntity<?> test() {
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok(
+                metadataRepository.findAllTrack()
+        );
     }
 }
