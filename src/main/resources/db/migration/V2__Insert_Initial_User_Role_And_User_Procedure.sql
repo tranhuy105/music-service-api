@@ -21,9 +21,9 @@ DELIMITER ;
 
 -- Insert initial roles
 INSERT INTO roles (id, name) VALUES
-                             (1, 'ROLE_USER'),
-                             (2, 'ROLE_ADMIN'),
-                             (3, 'ROLE_MANAGER');
+(1, 'ROLE_USER'),
+(2, 'ROLE_ADMIN'),
+(3, 'ROLE_MANAGER');
 
 -- Insert the admin user
 INSERT INTO users (email, password, account_locked, enabled)
@@ -35,4 +35,8 @@ SET @user_id = LAST_INSERT_ID();
 -- Assign roles to the admin user
 INSERT INTO user_role (user_id, role_id)
 VALUES (@user_id, 1),
-       (@user_id, 3);
+       (@user_id, 2);
+
+CALL CreateUser('user@example.com', '$2a$10$/ixbgJIvnYpUCXR6sNw6FeMQuLfBuwdI1oHJWVk3hSGHMmczBcQai');
+CALL CreateUser('user2@example.com', '$2a$10$/ixbgJIvnYpUCXR6sNw6FeMQuLfBuwdI1oHJWVk3hSGHMmczBcQai');
+CALL CreateUser('user3@example.com', '$2a$10$/ixbgJIvnYpUCXR6sNw6FeMQuLfBuwdI1oHJWVk3hSGHMmczBcQai');
