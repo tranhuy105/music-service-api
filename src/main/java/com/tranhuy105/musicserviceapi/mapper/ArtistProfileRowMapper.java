@@ -12,10 +12,10 @@ public class ArtistProfileRowMapper implements RowMapper<ArtistProfile> {
 
     @Override
     public ArtistProfile mapRow(ResultSet rs, int rowNum) throws SQLException {
-        long artistId = rs.getLong("id");
-        String stageName = rs.getString("stage_name");
-        String bio = rs.getString("bio");
-        String profilePictureUrl = rs.getString("profile_picture_url");
+        long artistId = rs.getLong("artist_id");
+        String stageName = rs.getString("artist_stage_name");
+        String bio = rs.getString("artist_bio");
+        String profilePictureUrl = rs.getString("artist_profile_picture_url");
 
         ArtistProfile artistProfile = new ArtistProfile();
         artistProfile.setId(artistId);
@@ -35,7 +35,7 @@ public class ArtistProfileRowMapper implements RowMapper<ArtistProfile> {
             album.setRole(rs.getString("role"));
 
             artistProfile.getAlbums().add(album);
-        } while (rs.next() && rs.getLong("id") == artistId);
+        } while (rs.next());
 
         return artistProfile;
     }

@@ -2,22 +2,20 @@ package com.tranhuy105.musicserviceapi.model;
 
 import lombok.Getter;
 
-import java.util.Map;
-
 @Getter
 public class QueryOptions {
     private final int page;
     private final int size;
     private final String sortBy;
     private final boolean asc;
-    private final Map<String, String> searchCriteria;
+    private final String searchString;
 
-    private QueryOptions(int page, int size, String sortBy, boolean asc, Map<String, String> searchCriteria) {
+    private QueryOptions(int page, int size, String sortBy, boolean asc, String searchString) {
         this.page = page;
         this.size = size;
         this.sortBy = sortBy;
         this.asc = asc;
-        this.searchCriteria = searchCriteria;
+        this.searchString = searchString;
     }
 
     public int getOffset() {
@@ -37,7 +35,7 @@ public class QueryOptions {
         private final int size;
         private String sortBy = null;
         private boolean asc = true;
-        private Map<String, String> searchCriteria = null;
+        private String searchString = null;
 
         public Builder(int page, int size) {
             this.page = page;
@@ -59,13 +57,13 @@ public class QueryOptions {
             return this;
         }
 
-        public Builder search(Map<String, String> searchCriteria) {
-            this.searchCriteria = searchCriteria;
+        public Builder search(String searchString) {
+            this.searchString = searchString;
             return this;
         }
 
         public QueryOptions build() {
-            return new QueryOptions(page, size, sortBy, asc, searchCriteria);
+            return new QueryOptions(page, size, sortBy, asc, searchString);
         }
     }
 }

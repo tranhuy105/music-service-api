@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface MetadataRepository {
     Optional<Track> findTrackById(Long trackId);
 
-    List<Track> findAllTrack();
+    Page<Track> findAllTrack(QueryOptions queryOptions);
 
     Optional<AlbumDetail> findAlbumById(Long albumId);
     List<Album> findAllAlbum();

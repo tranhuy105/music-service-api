@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
     private final MetadataRepository metadataRepository;
-    private final PlaylistRepository playlistRepository;
 
     @GetMapping
     public ResponseEntity<User> getAuthUserInfo(Authentication authentication) {
@@ -35,7 +34,7 @@ public class UserController {
     @GetMapping("/test/{id}")
     public ResponseEntity<?> testparam(@PathVariable Long id) {
         return ResponseEntity.ok(
-                playlistRepository.findPlaylistById(id)
+               null
         );
     }
 
