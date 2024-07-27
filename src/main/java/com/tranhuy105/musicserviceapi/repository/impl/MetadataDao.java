@@ -1,10 +1,7 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
-import com.tranhuy105.musicserviceapi.dto.TrackDetailDto;
 import com.tranhuy105.musicserviceapi.mapper.*;
 import com.tranhuy105.musicserviceapi.model.*;
-import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
-import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
 import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
 import com.tranhuy105.musicserviceapi.utils.QueryUtil;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +17,14 @@ public class MetadataDao implements MetadataRepository {
     private final QueryUtil queryUtil;
 
     @Override
-    public Optional<Track> findTrackById(Long trackId) {
+    public Optional<TrackDetail> findTrackById(Long trackId) {
         String sql = "SELECT * FROM track_details WHERE track_id = ?";
-        List<Track> res = jdbcTemplate.query(sql, new TrackDetailRowMapper(), trackId);
+        List<TrackDetail> res = jdbcTemplate.query(sql, new TrackDetailRowMapper(), trackId);
         return res.stream().findFirst();
     }
 
     @Override
-    public Page<Track> findAllTrack(QueryOptions queryOptions) {
+    public Page<TrackDetail> findAllTrack(QueryOptions queryOptions) {
         // mysql views can't use underlying table fulltext search index 🥲
         String baseQuery = """
                 SELECT t.id AS track_id,
@@ -70,6 +67,12 @@ public class MetadataDao implements MetadataRepository {
     }
 
     @Override
+    public List<Track> findAllTrackByAlbumId(Long albumId) {
+        String sql = "SELECT * FROM tracks WHERE album_id = ?";
+        return jdbcTemplate.query(sql, new TrackRowMapper(), albumId);
+    }
+
+    @Override
     public List<Artist> findAllArtist() {
         String sql = "SELECT * FROM artist_profiles";
         return jdbcTemplate.query(sql, new ArtistRowMapper());
@@ -89,6 +92,7 @@ public class MetadataDao implements MetadataRepository {
 
     @Override
     public Optional<ArtistProfile> findArtistProfileByUserId(Long userId) {
-        return Optional.empty();
+        String sql = "SELECT * FROM artist_profiles WHERE user_id = ?";
+        return jdbcTemplate.query(sql, new ArtistProfileRowMapper(), userId).stream().findFirst();
     }
 }

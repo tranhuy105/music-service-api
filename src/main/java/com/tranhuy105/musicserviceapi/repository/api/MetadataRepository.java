@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MetadataRepository {
-    Optional<Track> findTrackById(Long trackId);
+    Optional<TrackDetail> findTrackById(Long trackId);
 
-    Page<Track> findAllTrack(QueryOptions queryOptions);
+    Page<TrackDetail> findAllTrack(QueryOptions queryOptions);
 
     Optional<AlbumDetail> findAlbumById(Long albumId);
     List<Album> findAllAlbum();
     Page<Album> findAllAlbum(QueryOptions queryOptions);
+    List<Track> findAllTrackByAlbumId(Long albumId);
     List<Artist> findAllArtist();
     Page<Artist> findAllArtist(QueryOptions queryOptions);
 

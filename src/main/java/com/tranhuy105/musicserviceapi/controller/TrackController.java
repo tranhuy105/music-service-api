@@ -2,7 +2,7 @@ package com.tranhuy105.musicserviceapi.controller;
 
 import com.tranhuy105.musicserviceapi.model.Page;
 import com.tranhuy105.musicserviceapi.model.QueryOptions;
-import com.tranhuy105.musicserviceapi.model.Track;
+import com.tranhuy105.musicserviceapi.model.TrackDetail;
 import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ public class TrackController {
     private final MetadataRepository metadataRepository;
 
     @RequestMapping
-    public ResponseEntity<Page<Track>>getAllTrack(
+    public ResponseEntity<Page<TrackDetail>>getAllTrack(
             @RequestParam(value = "search", required = false) String search,
             @RequestParam(value = "page", required = false) Integer page
             ) {
@@ -28,7 +28,7 @@ public class TrackController {
     }
 
     @RequestMapping("/{id}")
-    public ResponseEntity<Track> getTrackById(@PathVariable Long id) {
+    public ResponseEntity<TrackDetail> getTrackById(@PathVariable Long id) {
         return ResponseEntity.ok(metadataRepository.findTrackById(id).orElseThrow());
     }
 }

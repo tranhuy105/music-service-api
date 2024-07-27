@@ -1,6 +1,6 @@
 package com.tranhuy105.musicserviceapi.utils;
 
-import com.tranhuy105.musicserviceapi.model.Track;
+import com.tranhuy105.musicserviceapi.model.TrackDetail;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
 import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
 
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CommonMapper {
-    public static Track mapTrack(ResultSet rs) throws SQLException {
+    public static TrackDetail mapTrack(ResultSet rs) throws SQLException {
         Long trackId = rs.getLong("track_id");
         String trackTitle = rs.getString("track_title");
         Integer trackDuration = rs.getInt("track_duration");
@@ -34,7 +34,13 @@ public class CommonMapper {
 
         TrackAlbum trackAlbum = new TrackAlbum(albumId, albumTitle, albumCoverUrl, albumArtists);
 
-        return new Track(trackId, trackTitle, trackDuration, trackAlbum);
+        TrackDetail track = new TrackDetail();
+        track.setId(trackId);
+        track.setTitle(trackTitle);
+        track.setAlbum(trackAlbum);
+        track.setDuration(trackDuration);
+
+        return track;
     }
 
     private static List<String> parseStringToList(String str) {

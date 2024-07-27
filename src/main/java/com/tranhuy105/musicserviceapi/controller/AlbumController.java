@@ -1,10 +1,12 @@
 package com.tranhuy105.musicserviceapi.controller;
 
+import com.tranhuy105.musicserviceapi.dto.AlbumDto;
 import com.tranhuy105.musicserviceapi.model.Album;
 import com.tranhuy105.musicserviceapi.model.AlbumDetail;
 import com.tranhuy105.musicserviceapi.model.Page;
 import com.tranhuy105.musicserviceapi.model.QueryOptions;
 import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
+import com.tranhuy105.musicserviceapi.service.MetadataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AlbumController {
     private final MetadataRepository metadataRepository;
+    private final MetadataService metadataService;
 
     @GetMapping
     public ResponseEntity<Page<Album>> findAllAlbum(
@@ -26,7 +29,7 @@ public class AlbumController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AlbumDetail> findAlbumById(@PathVariable Long id) {
-        return ResponseEntity.ok(metadataRepository.findAlbumById(id).orElseThrow());
+    public ResponseEntity<AlbumDto> findAlbumById(@PathVariable Long id) {
+        return ResponseEntity.ok(metadataService.findAlbumById(id));
     }
 }
