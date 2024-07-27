@@ -1,13 +1,14 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
 import com.tranhuy105.musicserviceapi.dto.TrackDetailDto;
+import com.tranhuy105.musicserviceapi.mapper.AlbumRowMapper;
+import com.tranhuy105.musicserviceapi.mapper.ArtistRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.TrackDetailDTORowMapper;
-import com.tranhuy105.musicserviceapi.model.Album;
-import com.tranhuy105.musicserviceapi.model.ArtistProfile;
-import com.tranhuy105.musicserviceapi.model.Track;
+import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
 import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
 import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
+import com.tranhuy105.musicserviceapi.utils.QueryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MetadataDao implements MetadataRepository {
     private final JdbcTemplate jdbcTemplate;
+    private final QueryUtil queryUtil;
 
     @Override
     public Optional<Track> findTrackById(Long trackId) {
@@ -34,8 +36,32 @@ public class MetadataDao implements MetadataRepository {
     }
 
     @Override
-    public Optional<Album> findAlbumById(Long albumId) {
+    public Optional<AlbumDetail> findAlbumById(Long albumId) {
         return Optional.empty();
+    }
+
+    @Override
+    public List<Album> findAllAlbum() {
+        String sql = "SELECT * FROM albums";
+        return jdbcTemplate.query(sql, new AlbumRowMapper());
+    }
+
+    @Override
+    public Page<Album> findAllAlbum(QueryOptions queryOptions) {
+        String baseQuery = "SELECT * FROM albums";
+        return queryUtil.executeQueryWithOptions(baseQuery, queryOptions, new AlbumRowMapper());
+    }
+
+    @Override
+    public List<Artist> findAllArtist() {
+        String sql = "SELECT * FROM artist_profiles";
+        return jdbcTemplate.query(sql, new ArtistRowMapper());
+    }
+
+    @Override
+    public Page<Artist> findAllArtist(QueryOptions queryOptions) {
+        String baseQuery = "SELECT * FROM artist_profiles";
+        return queryUtil.executeQueryWithOptions(baseQuery, queryOptions, new ArtistRowMapper());
     }
 
     @Override

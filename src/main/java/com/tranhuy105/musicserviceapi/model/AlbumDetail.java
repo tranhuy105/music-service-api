@@ -1,6 +1,5 @@
 package com.tranhuy105.musicserviceapi.model;
 
-import com.tranhuy105.musicserviceapi.model.ref.ArtistAlbum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +11,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtistProfile extends Artist{
-    private List<ArtistAlbum> albums;
+public class AlbumDetail extends Album{
+    private List<Track> tracks;
+    private List<Artist> artists;
 }
+
