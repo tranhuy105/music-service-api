@@ -1,5 +1,6 @@
 package com.tranhuy105.musicserviceapi.repository.api;
 
+import com.tranhuy105.musicserviceapi.dto.CreateArtistProfileRequestDto;
 import com.tranhuy105.musicserviceapi.model.Artist;
 import com.tranhuy105.musicserviceapi.model.ArtistProfile;
 import com.tranhuy105.musicserviceapi.model.Page;
@@ -14,5 +15,7 @@ public interface ArtistRepository {
 
     Optional<ArtistProfile> findArtistProfileById(Long id);
 
-    Optional<ArtistProfile> findArtistProfileByUserId(Long userId);
+    Optional<Artist> findArtistByUserId(Long userId);
+
+    void insert(CreateArtistProfileRequestDto dto);
 }

@@ -1,5 +1,6 @@
 package com.tranhuy105.musicserviceapi.repository.api;
 
+import com.tranhuy105.musicserviceapi.dto.CreateTrackRequestDto;
 import com.tranhuy105.musicserviceapi.model.Page;
 import com.tranhuy105.musicserviceapi.model.QueryOptions;
 import com.tranhuy105.musicserviceapi.model.Track;
@@ -16,4 +17,6 @@ public interface TrackRepository {
     Page<TrackDetail> findAllTrack(QueryOptions queryOptions);
 
     List<Track> findTrackRawByAlbumId(Long albumId);
+
+    Long insert(CreateTrackRequestDto dto);
 }

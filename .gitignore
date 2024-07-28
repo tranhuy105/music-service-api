@@ -4,6 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 data/
+inits3.bat
+mc.exe
 
 ### STS ###
 .apt_generated

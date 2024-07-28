@@ -1,5 +1,6 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
+import com.tranhuy105.musicserviceapi.dto.CreateArtistProfileRequestDto;
 import com.tranhuy105.musicserviceapi.mapper.ArtistProfileRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.ArtistRowMapper;
 import com.tranhuy105.musicserviceapi.model.Artist;
@@ -11,6 +12,7 @@ import com.tranhuy105.musicserviceapi.utils.QueryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,8 +41,15 @@ public class ArtistDao implements ArtistRepository {
     }
 
     @Override
-    public Optional<ArtistProfile> findArtistProfileByUserId(Long userId) {
+    public Optional<Artist> findArtistByUserId(Long userId) {
         String sql = "SELECT * FROM artist_profiles WHERE user_id = ?";
-        return jdbcTemplate.query(sql, new ArtistProfileRowMapper(), userId).stream().findFirst();
+        return jdbcTemplate.query(sql, new ArtistRowMapper(), userId).stream().findFirst();
+    }
+
+    @Transactional
+    @Override
+    public void insert(CreateArtistProfileRequestDto dto) {
+        String sql = "{CALL createArtistProfile(?, ?, ?, ?)}";
+        jdbcTemplate.update(sql, dto.getUserId(), dto.getStageName(), dto.getBio(), dto.getProfilePictureUrl());
     }
 }

@@ -38,18 +38,8 @@ public class UserDao implements UserRepository {
     @Override
     @Transactional
     public void insert(@NonNull User user) {
-        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withProcedureName("CreateUser");
-
-        try {
-            jdbcCall.execute(Map.of(
-                    "p_email", user.getEmail(),
-                    "p_password", user.getPassword()
-            ));
-        } catch (DataAccessException e) {
-            logger.error("Error executing stored procedure: " + e.getMessage(), e);
-            throw new RuntimeException("Failed to create user: " + e.getMessage(), e);
-        }
+        String sql = "{CALL CreateUser(?, ?)}";
+        jdbcTemplate.update(sql, user.getEmail(), user.getPassword());
     }
 
 

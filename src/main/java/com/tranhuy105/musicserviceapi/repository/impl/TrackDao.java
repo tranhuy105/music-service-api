@@ -1,5 +1,6 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
+import com.tranhuy105.musicserviceapi.dto.CreateTrackRequestDto;
 import com.tranhuy105.musicserviceapi.mapper.TrackDetailRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.TrackRowMapper;
 import com.tranhuy105.musicserviceapi.model.Page;
@@ -10,9 +11,11 @@ import com.tranhuy105.musicserviceapi.repository.api.TrackRepository;
 import com.tranhuy105.musicserviceapi.utils.QueryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -61,5 +64,18 @@ public class TrackDao implements TrackRepository {
     public List<Track> findTrackRawByAlbumId(Long albumId) {
         String sql = "SELECT * FROM tracks WHERE album_id = ?";
         return jdbcTemplate.query(sql, new TrackRowMapper(), albumId);
+    }
+
+    @Override
+    public Long insert(CreateTrackRequestDto dto) {
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withProcedureName("createTrack");
+
+        Map<String, Object> out = jdbcCall.execute(
+                Map.of("p_album_id", dto.getAlbumId(),
+                        "p_title", dto.getTitle(),
+                        "p_duration", dto.getDuration())
+        );
+        return (Long) out.get("p_track_id");
     }
 }

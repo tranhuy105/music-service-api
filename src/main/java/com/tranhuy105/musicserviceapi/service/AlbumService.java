@@ -1,14 +1,20 @@
 package com.tranhuy105.musicserviceapi.service;
 
 import com.tranhuy105.musicserviceapi.dto.AlbumDto;
+import com.tranhuy105.musicserviceapi.dto.CreateAlbumRequestDto;
+import com.tranhuy105.musicserviceapi.dto.AlbumArtistCRUDRequestDto;
 import com.tranhuy105.musicserviceapi.exception.ObjectNotFoundException;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
 import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
 import com.tranhuy105.musicserviceapi.repository.api.AlbumRepository;
+import com.tranhuy105.musicserviceapi.repository.api.ArtistRepository;
 import com.tranhuy105.musicserviceapi.repository.api.TrackRepository;
 import com.tranhuy105.musicserviceapi.utils.CachePrefix;
+import com.tranhuy105.musicserviceapi.utils.Util;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +24,7 @@ import java.util.List;
 public class AlbumService {
     private final AlbumRepository albumRepository;
     private final TrackRepository trackRepository;
+    private final ArtistRepository artistRepository;
     private final CacheService cacheService;
     private static final int SEARCH_PAGE_SIZE = 20;
 
@@ -45,6 +52,64 @@ public class AlbumService {
         return cacheService.cacheOrFetch(cacheKey, () ->
                 trackRepository.findTrackDetailByAlbumId(albumId)
         );
+    }
+
+    public void createAlbum(CreateAlbumRequestDto dto, Authentication authentication) {
+        Artist artist = checkArtistProfile(authentication);
+        if (dto.getArtistRoles().stream().noneMatch(
+                requestArtist -> requestArtist.getArtistId().equals(artist.getId()))
+        ) {
+            throw new RuntimeException("You must include yourself as an artist.");
+        }
+
+        albumRepository.insert(dto);
+    }
+
+    public void addAlbumArtist(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
+        artistValidator(dto, authentication);
+        albumRepository.linkNewArtist(dto);
+        evictAlbumCache(dto.getAlbumId());
+    }
+
+    public void removeAlbumArtist(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
+        AlbumDto albumDto = artistValidator(dto, authentication);
+        if (albumDto.getArtists().size() <= 1) {
+            throw new RuntimeException("Album must have at least one artist");
+        }
+        albumRepository.unlinkArtist(dto);
+        evictAlbumCache(dto.getAlbumId());
+    }
+
+    public void updateAlbumArtist(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
+        artistValidator(dto, authentication);
+        albumRepository.updateLinkedArtist(dto);
+        evictAlbumCache(dto.getAlbumId());
+    }
+
+    private AlbumDto artistValidator(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
+        Artist artist = checkArtistProfile(authentication);
+        AlbumDto albumDto = findAlbumById(dto.getAlbumId());
+        boolean isValidArtist = albumDto.getArtists().stream()
+                .anyMatch(existingArtist -> existingArtist.getId().equals(artist.getId()));
+
+        if (!isValidArtist) {
+            throw new AccessDeniedException("This artist is not authorized to perform action with this album");
+        }
+
+        return albumDto;
+    }
+
+    private Artist checkArtistProfile(Authentication authentication)  {
+        Long userId = Util.extractUserIdFromAuthentication(authentication);
+
+       return artistRepository.findArtistByUserId(userId).orElseThrow(
+                () -> new AccessDeniedException("This artist doesnt associated with any artist profile")
+        );
+    }
+
+    private void evictAlbumCache(Long albumId) {
+        cacheService.evictCache(CachePrefix.ALBUM, albumId);
+        cacheService.evictCache(CachePrefix.ALBUM_TRACKS, albumId);
     }
 
     private AlbumDto AlbumDtoBuilder(AlbumDetail albumDetail, List<Track> tracks) {

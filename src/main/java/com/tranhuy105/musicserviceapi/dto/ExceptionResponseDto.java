@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 
-import java.util.Set;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -15,5 +15,5 @@ import java.util.Set;
 public class ExceptionResponseDto {
     private String message;
     private HttpStatus httpStatus;
-    private Set<String> details;
+    private Map<String, String> details;
 }
