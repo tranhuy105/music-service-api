@@ -1,27 +1,28 @@
 package com.tranhuy105.musicserviceapi.dto;
 
+import com.tranhuy105.musicserviceapi.model.Page;
+import com.tranhuy105.musicserviceapi.model.Playlist;
+import com.tranhuy105.musicserviceapi.model.PlaylistTrack;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 @NoArgsConstructor
-public class PlaylistTrackDto {
-    private int position;
-    private LocalDate addedAt;
-    private long addedBy;
-    private long trackId;
-    private String trackTitle;
-    private int trackDuration;
-    private long albumId;
-    private String albumTitle;
-    private String albumCoverUrl;
-    private long artistId;
-    private String artistStageName;
-    private String artistProfilePictureUrl;
-    private String artistRole;
+public class PlaylistTrackDto extends Playlist {
+    Page<PlaylistTrack> tracks;
+
+    public PlaylistTrackDto(Playlist playlist, Page<PlaylistTrack> tracks) {
+        super.setId(playlist.getId());
+        super.setUserId(playlist.getUserId());
+        super.setName(playlist.getName());
+        super.setDescription(playlist.getDescription());
+        super.setIsPublic(playlist.getIsPublic());
+        super.setCoverUrl(playlist.getCoverUrl());
+        super.setTotalTrack(playlist.getTotalTrack());
+        this.tracks = tracks;
+
+    }
 }
 

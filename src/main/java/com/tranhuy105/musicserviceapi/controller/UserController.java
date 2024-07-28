@@ -5,6 +5,7 @@ import com.tranhuy105.musicserviceapi.model.QueryOptions;
 import com.tranhuy105.musicserviceapi.model.User;
 import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
 import com.tranhuy105.musicserviceapi.repository.api.PlaylistRepository;
+import com.tranhuy105.musicserviceapi.service.CacheService;
 import com.tranhuy105.musicserviceapi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
     private final MetadataRepository metadataRepository;
+    private final CacheService cacheService;
 
     @GetMapping
     public ResponseEntity<User> getAuthUserInfo(Authentication authentication) {
@@ -40,10 +42,9 @@ public class UserController {
 
     @GetMapping("/test")
     public ResponseEntity<?> test() {
+        cacheService.evictAllCache();
         return ResponseEntity.ok(
-                metadataRepository.findAllAlbum(
-                        QueryOptions.of(1,15).build()
-                )
+                "Evict All Cache"
         );
     }
 }

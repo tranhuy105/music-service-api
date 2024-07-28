@@ -2,7 +2,7 @@ package com.tranhuy105.musicserviceapi.controller;
 
 
 import com.tranhuy105.musicserviceapi.model.*;
-import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
+import com.tranhuy105.musicserviceapi.service.MetadataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,21 +11,19 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/artists")
 @RequiredArgsConstructor
 public class ArtistController {
-    private final MetadataRepository metadataRepository;
+    private final MetadataService metadataService;
 
-    @GetMapping
+    @GetMapping("/search")
     public ResponseEntity<Page<Artist>> findAllArtist(
-            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "q") String search,
             @RequestParam(value = "page", required = false) Integer page
     ) {
-        return ResponseEntity.ok(metadataRepository.findAllArtist(
-                QueryOptions.of(page != null ? page : 1,10).search(search).build()
-        ));
+        return ResponseEntity.ok(metadataService.searchArtist(page, search));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ArtistProfile> findArtistById(@PathVariable Long id) {
-        return ResponseEntity.ok(metadataRepository.findArtistProfileById(id).orElseThrow());
+        return ResponseEntity.ok(metadataService.findArtistProfileById(id));
     }
 
 }

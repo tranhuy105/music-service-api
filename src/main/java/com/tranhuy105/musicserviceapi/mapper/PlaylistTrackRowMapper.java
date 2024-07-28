@@ -1,7 +1,7 @@
 package com.tranhuy105.musicserviceapi.mapper;
 
 import com.tranhuy105.musicserviceapi.model.PlaylistTrack;
-import com.tranhuy105.musicserviceapi.model.Track;
+import com.tranhuy105.musicserviceapi.model.TrackDetail;
 import com.tranhuy105.musicserviceapi.utils.CommonMapper;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -13,7 +13,7 @@ public class PlaylistTrackRowMapper implements RowMapper<PlaylistTrack> {
 
     @Override
     public PlaylistTrack mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Track track = CommonMapper.mapTrack(rs);
+        TrackDetail track = CommonMapper.mapTrack(rs);
 
         PlaylistTrack playlistTrack = new PlaylistTrack();
         playlistTrack.setTrack(track);
