@@ -25,6 +25,17 @@ application:
       secretKey: mysupersecretkeyihavetomakeitlongoriwillgetanexceptionfortooshortlmao
       jwtExpiration: 86400000
 
+s3:
+  bucket:
+    name: music-platform
+  access:
+    key: user
+  secret:
+    key: password
+  endpoint:
+    url: http://localhost:9000
+  region: us-east-1
+
 logging:
   level:
     com.tranhuy105.musicserviceapi: DEBUG

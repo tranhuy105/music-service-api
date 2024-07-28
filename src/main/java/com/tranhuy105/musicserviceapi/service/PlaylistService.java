@@ -27,12 +27,7 @@ public class PlaylistService {
                     () -> new ObjectNotFoundException("playlist", id.toString())
             );
 
-            Page<PlaylistTrack> tracks = playlistRepository.findPlaylistTracksById(id,
-                    QueryOptions
-                            .of(pageSafe, PLAYLIST_PAGE_SIZE)
-                            .sortBy("position")
-                            .build()
-            );
+            Page<PlaylistTrack> tracks = findPlaylistTracks(id, pageSafe);
 
             return new PlaylistTrackDto(playlist, tracks);
         });
