@@ -34,4 +34,21 @@ public class PlaylistDao implements PlaylistRepository {
         String sql = "SELECT * FROM playlist_summary WHERE playlist_id = ?";
         return jdbcTemplate.query(sql, new PlaylistSummaryRowMapper(), id).stream().findFirst();
     }
+
+    @Override
+    public Page<Playlist> findAllPlaylist(@NonNull QueryOptions queryOptions) {
+        String baseQuery = """
+                SELECT
+                    p.id AS playlist_id,
+                    p.user_id AS user_id,
+                    p.name AS playlist_name,
+                    p.cover_url AS playlist_cover_url,
+                    p.description AS playlist_description,
+                    p.public AS is_public,
+                    COUNT(pt.track_id) AS total_tracks
+                FROM playlists p
+                LEFT JOIN playlist_track pt ON p.id = pt.playlist_id
+                GROUP BY p.id, p.name, p.cover_url""";
+        return queryUtil.executeQueryWithOptions(baseQuery, queryOptions, new PlaylistSummaryRowMapper());
+    }
 }

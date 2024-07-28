@@ -2,6 +2,7 @@ package com.tranhuy105.musicserviceapi.utils;
 
 import com.tranhuy105.musicserviceapi.mapper.AlbumRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.ArtistRowMapper;
+import com.tranhuy105.musicserviceapi.mapper.PlaylistSummaryRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.TrackDetailRowMapper;
 
 import java.util.Map;
@@ -18,6 +19,8 @@ public class SearchQueryFactory {
             return buildAlbumSearchQuery(searchString, params);
         } else if (clazz.equals(ArtistRowMapper.class)) {
             return buildArtistSearchQuery(searchString, params);
+        } else if (clazz.equals(PlaylistSummaryRowMapper.class)) {
+            return buildPlaylistSearchQuery(searchString, params);
         } else {
             throw new IllegalArgumentException("Unknown class type: " + clazz.getName());
         }
@@ -36,5 +39,10 @@ public class SearchQueryFactory {
     private static String buildArtistSearchQuery(String searchString, Map<String, Object> params) {
         params.put("searchString", searchString);
         return "MATCH (stage_name) AGAINST (:searchString)";
+    }
+
+    private static String buildPlaylistSearchQuery(String searchString, Map<String, Object> params) {
+        params.put("searchString", searchString);
+        return "MATCH (name) AGAINST (:searchString)";
     }
 }

@@ -13,4 +13,6 @@ public interface PlaylistRepository {
     Page<PlaylistTrack> findPlaylistTracksById(@NonNull Long id, @NonNull QueryOptions queryOptions);
 
     Optional<Playlist> findPlaylistById(@NonNull Long id);
+
+    Page<Playlist> findAllPlaylist(@NonNull QueryOptions queryOptions);
 }

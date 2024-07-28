@@ -2,9 +2,7 @@ package com.tranhuy105.musicserviceapi.service;
 
 import com.tranhuy105.musicserviceapi.dto.AlbumDto;
 import com.tranhuy105.musicserviceapi.exception.ObjectNotFoundException;
-import com.tranhuy105.musicserviceapi.model.AlbumDetail;
-import com.tranhuy105.musicserviceapi.model.Track;
-import com.tranhuy105.musicserviceapi.model.TrackDetail;
+import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
 import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
 import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
@@ -17,6 +15,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MetadataService {
     private final MetadataRepository metadataRepository;
+    private static final int SEARCH_PAGE_SIZE = 20;
+
+    public Page<Album> searchAlbum(Integer page, String searchQuery) {
+        return metadataRepository.findAllAlbum(
+                QueryOptions.of(page != null ? page : 1,SEARCH_PAGE_SIZE).search(searchQuery).build()
+        );
+    }
+
+    public Page<Artist> searchArtist(Integer page, String searchQuery) {
+        return metadataRepository.findAllArtist(
+                QueryOptions.of(page != null ? page : 1,SEARCH_PAGE_SIZE).search(searchQuery).build()
+        );
+    }
+
+
+    public Page<TrackDetail> searchTrack(Integer page, String searchQuery) {
+        return metadataRepository.findAllTrack(
+                QueryOptions.of(page != null ? page : 1,SEARCH_PAGE_SIZE).search(searchQuery).build()
+        );
+    }
+
+    public ArtistProfile findArtistProfileById(Long id) {
+        return metadataRepository.findArtistProfileById(id).orElseThrow(
+                () -> new ObjectNotFoundException("artist", id.toString())
+        );
+    }
+
+    public TrackDetail findTrackById(Long id) {
+        return metadataRepository.findTrackById(id).orElseThrow(
+                () -> new ObjectNotFoundException("track", id.toString())
+        );
+    }
 
     public AlbumDto findAlbumById(Long albumId) {
         AlbumDetail albumDetail = metadataRepository.findAlbumById(albumId).orElseThrow(
@@ -26,6 +56,10 @@ public class MetadataService {
         List<Track> tracks = metadataRepository.findAllTrackByAlbumId(albumId);
 
         return AlbumDtoBuilder(albumDetail, tracks);
+    }
+
+    public List<TrackDetail> findAlbumTracks(Long albumId) {
+        return metadataRepository.findTrackByAlbumId(albumId);
     }
 
     private AlbumDto AlbumDtoBuilder(AlbumDetail albumDetail, List<Track> tracks) {

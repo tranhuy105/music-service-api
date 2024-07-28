@@ -24,6 +24,12 @@ public class MetadataDao implements MetadataRepository {
     }
 
     @Override
+    public List<TrackDetail> findTrackByAlbumId(Long albumId) {
+        String sql = "SELECT * FROM track_details WHERE album_id = ?";
+        return jdbcTemplate.query(sql, new TrackDetailRowMapper(), albumId);
+    }
+
+    @Override
     public Page<TrackDetail> findAllTrack(QueryOptions queryOptions) {
         // mysql views can't use underlying table fulltext search index 🥲
         String baseQuery = """
