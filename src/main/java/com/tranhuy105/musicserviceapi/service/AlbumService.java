@@ -5,7 +5,8 @@ import com.tranhuy105.musicserviceapi.exception.ObjectNotFoundException;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
 import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
-import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
+import com.tranhuy105.musicserviceapi.repository.api.AlbumRepository;
+import com.tranhuy105.musicserviceapi.repository.api.TrackRepository;
 import com.tranhuy105.musicserviceapi.utils.CachePrefix;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,56 +15,26 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MetadataService {
-    private final MetadataRepository metadataRepository;
+public class AlbumService {
+    private final AlbumRepository albumRepository;
+    private final TrackRepository trackRepository;
     private final CacheService cacheService;
     private static final int SEARCH_PAGE_SIZE = 20;
 
     public Page<Album> searchAlbum(Integer page, String searchQuery) {
-        return metadataRepository.findAllAlbum(
+        return albumRepository.findAllAlbum(
                 QueryOptions.of(page != null ? page : 1,SEARCH_PAGE_SIZE).search(searchQuery).build()
         );
-    }
-
-    public Page<Artist> searchArtist(Integer page, String searchQuery) {
-        return metadataRepository.findAllArtist(
-                QueryOptions.of(page != null ? page : 1,SEARCH_PAGE_SIZE).search(searchQuery).build()
-        );
-    }
-
-
-    public Page<TrackDetail> searchTrack(Integer page, String searchQuery) {
-        return metadataRepository.findAllTrack(
-                QueryOptions.of(page != null ? page : 1,SEARCH_PAGE_SIZE).search(searchQuery).build()
-        );
-    }
-
-    public ArtistProfile findArtistProfileById(Long id) {
-        String cacheKey = cacheService.getCacheKey(CachePrefix.ARTIST_PROFILE, id);
-        return cacheService.cacheOrFetch(cacheKey, () ->
-            metadataRepository.findArtistProfileById(id).orElseThrow(
-                    () -> new ObjectNotFoundException("artist", id.toString())
-            )
-        );
-
-    }
-
-    public TrackDetail findTrackById(Long id) {
-        String cacheKey = cacheService.getCacheKey(CachePrefix.TRACK, id);
-        return cacheService.cacheOrFetch(cacheKey, () ->
-                metadataRepository.findTrackById(id).orElseThrow(
-                        () -> new ObjectNotFoundException("track", id.toString())
-        ));
     }
 
     public AlbumDto findAlbumById(Long albumId) {
         String cacheKey = cacheService.getCacheKey(CachePrefix.ALBUM, albumId);
         return cacheService.cacheOrFetch(cacheKey, () -> {
-            AlbumDetail albumDetail = metadataRepository.findAlbumById(albumId).orElseThrow(
+            AlbumDetail albumDetail = albumRepository.findAlbumDetailById(albumId).orElseThrow(
                     () -> new ObjectNotFoundException("Album Not Exists")
             );
 
-            List<Track> tracks = metadataRepository.findAllTrackByAlbumId(albumId);
+            List<Track> tracks = trackRepository.findTrackRawByAlbumId(albumId);
 
             return AlbumDtoBuilder(albumDetail, tracks);
         });
@@ -72,7 +43,7 @@ public class MetadataService {
     public List<TrackDetail> findAlbumTracks(Long albumId) {
         String cacheKey = cacheService.getCacheKey(CachePrefix.ALBUM_TRACKS, albumId);
         return cacheService.cacheOrFetch(cacheKey, () ->
-            metadataRepository.findTrackByAlbumId(albumId)
+                trackRepository.findTrackDetailByAlbumId(albumId)
         );
     }
 

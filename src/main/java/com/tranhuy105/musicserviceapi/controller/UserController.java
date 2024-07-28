@@ -1,10 +1,7 @@
 package com.tranhuy105.musicserviceapi.controller;
 
 import com.tranhuy105.musicserviceapi.dto.UserDto;
-import com.tranhuy105.musicserviceapi.model.QueryOptions;
 import com.tranhuy105.musicserviceapi.model.User;
-import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
-import com.tranhuy105.musicserviceapi.repository.api.PlaylistRepository;
 import com.tranhuy105.musicserviceapi.service.CacheService;
 import com.tranhuy105.musicserviceapi.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final MetadataRepository metadataRepository;
     private final CacheService cacheService;
 
     @GetMapping
