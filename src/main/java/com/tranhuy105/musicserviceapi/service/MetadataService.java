@@ -6,6 +6,7 @@ import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
 import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
 import com.tranhuy105.musicserviceapi.repository.api.MetadataRepository;
+import com.tranhuy105.musicserviceapi.utils.CachePrefix;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MetadataService {
     private final MetadataRepository metadataRepository;
+    private final CacheService cacheService;
     private static final int SEARCH_PAGE_SIZE = 20;
 
     public Page<Album> searchAlbum(Integer page, String searchQuery) {
@@ -37,29 +39,41 @@ public class MetadataService {
     }
 
     public ArtistProfile findArtistProfileById(Long id) {
-        return metadataRepository.findArtistProfileById(id).orElseThrow(
-                () -> new ObjectNotFoundException("artist", id.toString())
+        String cacheKey = cacheService.getCacheKey(CachePrefix.ARTIST_PROFILE, id);
+        return cacheService.cacheOrFetch(cacheKey, () ->
+            metadataRepository.findArtistProfileById(id).orElseThrow(
+                    () -> new ObjectNotFoundException("artist", id.toString())
+            )
         );
+
     }
 
     public TrackDetail findTrackById(Long id) {
-        return metadataRepository.findTrackById(id).orElseThrow(
-                () -> new ObjectNotFoundException("track", id.toString())
-        );
+        String cacheKey = cacheService.getCacheKey(CachePrefix.TRACK, id);
+        return cacheService.cacheOrFetch(cacheKey, () ->
+                metadataRepository.findTrackById(id).orElseThrow(
+                        () -> new ObjectNotFoundException("track", id.toString())
+        ));
     }
 
     public AlbumDto findAlbumById(Long albumId) {
-        AlbumDetail albumDetail = metadataRepository.findAlbumById(albumId).orElseThrow(
-                        () -> new ObjectNotFoundException("Album Not Exists")
-        );
+        String cacheKey = cacheService.getCacheKey(CachePrefix.ALBUM, albumId);
+        return cacheService.cacheOrFetch(cacheKey, () -> {
+            AlbumDetail albumDetail = metadataRepository.findAlbumById(albumId).orElseThrow(
+                    () -> new ObjectNotFoundException("Album Not Exists")
+            );
 
-        List<Track> tracks = metadataRepository.findAllTrackByAlbumId(albumId);
+            List<Track> tracks = metadataRepository.findAllTrackByAlbumId(albumId);
 
-        return AlbumDtoBuilder(albumDetail, tracks);
+            return AlbumDtoBuilder(albumDetail, tracks);
+        });
     }
 
     public List<TrackDetail> findAlbumTracks(Long albumId) {
-        return metadataRepository.findTrackByAlbumId(albumId);
+        String cacheKey = cacheService.getCacheKey(CachePrefix.ALBUM_TRACKS, albumId);
+        return cacheService.cacheOrFetch(cacheKey, () ->
+            metadataRepository.findTrackByAlbumId(albumId)
+        );
     }
 
     private AlbumDto AlbumDtoBuilder(AlbumDetail albumDetail, List<Track> tracks) {

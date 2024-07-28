@@ -7,6 +7,7 @@ import com.tranhuy105.musicserviceapi.model.Playlist;
 import com.tranhuy105.musicserviceapi.model.PlaylistTrack;
 import com.tranhuy105.musicserviceapi.model.QueryOptions;
 import com.tranhuy105.musicserviceapi.repository.api.PlaylistRepository;
+import com.tranhuy105.musicserviceapi.utils.CachePrefix;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,31 +15,39 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PlaylistService {
     private final PlaylistRepository playlistRepository;
+    private final CacheService cacheService;
     private static final int PLAYLIST_PAGE_SIZE = 200;
     private static final int SEARCH_PAGE_SIZE = 20;
 
     public PlaylistTrackDto findPlaylistById(Long id, Integer page) {
-        Playlist playlist = playlistRepository.findPlaylistById(id).orElseThrow(
-                () -> new ObjectNotFoundException("playlist", id.toString())
-        );
+        final int pageSafe = page != null ? page : 1;
+        String cacheKey = cacheService.getCacheKey(CachePrefix.PLAYLIST, id, pageSafe);
+        return cacheService.cacheOrFetch(cacheKey, () -> {
+            Playlist playlist = playlistRepository.findPlaylistById(id).orElseThrow(
+                    () -> new ObjectNotFoundException("playlist", id.toString())
+            );
 
-        Page<PlaylistTrack> tracks = playlistRepository.findPlaylistTracksById(id,
-                QueryOptions
-                        .of(page != null ? page : 1, PLAYLIST_PAGE_SIZE)
-                        .sortBy("position")
-                        .build()
-        );
+            Page<PlaylistTrack> tracks = playlistRepository.findPlaylistTracksById(id,
+                    QueryOptions
+                            .of(pageSafe, PLAYLIST_PAGE_SIZE)
+                            .sortBy("position")
+                            .build()
+            );
 
-        return new PlaylistTrackDto(playlist, tracks);
+            return new PlaylistTrackDto(playlist, tracks);
+        });
     }
 
     public Page<PlaylistTrack> findPlaylistTracks(Long id, Integer page) {
-        return playlistRepository.findPlaylistTracksById(id,
-                QueryOptions
-                        .of(page != null ? page : 1, PLAYLIST_PAGE_SIZE)
-                        .sortBy("position")
-                        .build()
-        );
+        final int pageSafe = page != null ? page : 1;
+        String cacheKey = cacheService.getCacheKey(CachePrefix.PLAYLIST_TRACKS, id, pageSafe);
+        return cacheService.cacheOrFetch(cacheKey, () ->
+                playlistRepository.findPlaylistTracksById(id,
+                        QueryOptions
+                                .of(pageSafe, PLAYLIST_PAGE_SIZE)
+                                .sortBy("position")
+                                .build()
+                ));
     }
 
     public Page<Playlist> searchPlaylist(Integer page, String searchQuery) {
