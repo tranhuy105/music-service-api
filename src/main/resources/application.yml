@@ -19,6 +19,10 @@ spring:
     password: password
     url: jdbc:mysql://localhost:3306/spotify
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
 application:
   security:
     jwt:
