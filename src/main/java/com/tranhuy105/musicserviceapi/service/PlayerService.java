@@ -41,7 +41,8 @@ public class PlayerService {
             session.validateDevice(deviceId);
 
             TrackDetail track = trackService.findTrackById(trackId);
-            switchSessionTrack(session, user, track);
+            session.resetHistoryIndex();
+            switchSessionTrack(session, track);
 
             if ((!Objects.equals(streamingSource, session.getStreamingSource()) || session.getTrackQueue().isEmpty())) {
                 session.setStreamingSource(streamingSource);
@@ -53,42 +54,56 @@ public class PlayerService {
 
     public Long nextTrack(String deviceId, User user) {
         String sessionLock = getStreamingSessionLock(user);
-        cacheService.executeWithLock(sessionLock, () -> {
+        return cacheService.executeWithLock(sessionLock, () -> {
             StreamingSession session = getStreamingSession(user);
             if (session == null) {
                 throw new StreamingException("No session found");
             }
 
             if (session.getStreamingSource() == null) {
-                throw new StreamingException("This session is not associated with any playlist");
+                throw new StreamingException("Session is not associated with any source");
             }
 
             session.validateDevice(deviceId);
             ensureQueueIsNotEmpty(session);
             TrackDetail nextTrack = trackService.findTrackById(session.getTrackQueue().poll());
-            switchSessionTrack(session, user, nextTrack);
+            session.resetHistoryIndex();
+            switchSessionTrack(session, nextTrack);
             cacheService.cacheStreamingSession(user.getId(), session);
+            return session.getCurrentTrack().getId();
         });
-        return getStreamingSession(user).getCurrentTrack().getId();
     }
 
     public Long prevTrack(String deviceId, User user) {
         String sessionLock = getStreamingSessionLock(user);
-        cacheService.executeWithLock(sessionLock, () -> {
+        return cacheService.executeWithLock(sessionLock, () -> {
             StreamingSession session = getStreamingSession(user);
             if (session == null) {
                 throw new StreamingException("No session found");
             }
             session.validateDevice(deviceId);
-            List<StreamingHistory> history = getSessionHistory(user);
-            if (history.isEmpty()) {
-                throw new StreamingException("Empty history");
+            session.incrementHistoryIndex();
+
+            Optional<TrackDetail> prevTrack = getTrackFromHistory(user, session.getHistoryIndex());
+            if (prevTrack.isEmpty()){
+                return session.getCurrentTrack().getId();
             }
 
-            switchSessionTrack(session, user, history.get(0).getTrack());
+            switchSessionTrack(session, prevTrack.get());
             cacheService.cacheStreamingSession(user.getId(), session);
+            return session.getCurrentTrack().getId();
         });
-        return getStreamingSession(user).getCurrentTrack().getId();
+    }
+
+    private Optional<TrackDetail> getTrackFromHistory(User user, int index) {
+        String key = cacheService.getCacheKey(CachePrefix.STREAMING_HISTORY, user.getId());
+        Object historyObject = cacheService.getRedisTemplate().opsForList().index(key, index);
+
+        if (historyObject instanceof StreamingHistory) {
+            return Optional.of(((StreamingHistory) historyObject).getTrack());
+        }
+
+        return Optional.empty();
     }
 
     public void pauseSession(String deviceId, User user) {
@@ -153,12 +168,12 @@ public class PlayerService {
         return convertToListeningHistoryList(historyObjects);
     }
 
-    private void switchSessionTrack(StreamingSession session, User user, TrackDetail track) {
+    private void switchSessionTrack(StreamingSession session, TrackDetail track) {
         if (session != null) {
             session.resume();
             StreamingHistory history = session.playTrack(track);
             if (history != null) {
-                saveStreamingHistory(user.getId(), history);
+                saveStreamingHistory(session.getUserId(), history);
             }
         }
     }
@@ -180,7 +195,10 @@ public class PlayerService {
         List<TrackQueueDto> tracks = streamingSourceService.getTracks(session.getStreamingSource());
 
         if (tracks.isEmpty()) {
-            throw new StreamingException("Playlist is empty");
+            if (session.getCurrentTrack() != null) {
+                trackQueue.add(session.getCurrentTrack().getId());
+            }
+            return trackQueue;
         }
 
 

@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 public interface CacheService {
     <T> T cacheOrFetch(String cacheKey, Supplier<T> fallback);
     void executeWithLock(String lockKey, Runnable operation);
+    <T> T executeWithLock(String lockKey, Supplier<T> supplier);
     String getCacheKey(CachePrefix prefix, Object... parts);
     void evictCache(CachePrefix cachePrefix, Object... parts);
     StreamingSession getStreamingSessionCache(Long userId);

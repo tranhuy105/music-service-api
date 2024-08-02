@@ -32,6 +32,8 @@ public class StreamingSession {
     private String deviceId; // Identifier for the device playing the track
 
     private Queue<Long> trackQueue= new LinkedList<>();
+    // a pointer to track where is the previous track really is to avoid a loop between current and previous track
+    private int historyIndex = -1;
 
     public StreamingSession(User user, String deviceId, StreamingSource streamingSource, PlaybackMode playbackMode) {
         this.userId = user.getId();
@@ -77,6 +79,17 @@ public class StreamingSession {
     public void validateDevice(String deviceId) {
         if (this.isPlaying && !this.deviceId.equals(deviceId)) {
             throw new AccessDeniedException("Another device is currently streaming.");
+        }
+    }
+
+    public void resetHistoryIndex() {
+        this.historyIndex = -1;
+    }
+
+    public void incrementHistoryIndex() {
+        this.historyIndex++;
+        if (this.historyIndex != 0) {
+            this.historyIndex++;
         }
     }
 

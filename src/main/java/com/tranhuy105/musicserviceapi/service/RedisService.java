@@ -46,6 +46,17 @@ public class RedisService implements CacheService {
     }
 
     @Override
+    public <T> T executeWithLock(String lockKey, Supplier<T> supplier) {
+        RLock lock = redissonClient.getLock(lockKey);
+        lock.lock();
+        try {
+            return supplier.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
     public String getCacheKey(CachePrefix prefix, Object... parts) {
         StringBuilder key = new StringBuilder(prefix.getPrefix());
         for (Object part : parts) {
