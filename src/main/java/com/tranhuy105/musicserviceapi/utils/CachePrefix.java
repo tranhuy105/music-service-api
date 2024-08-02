@@ -10,7 +10,10 @@ public enum CachePrefix {
     ARTIST_PROFILE("artist:profile:"),
     ALBUM("album:"),
     ALBUM_TRACKS("album:tracks:"),
-    TRACK("track:");
+    TRACK("track:"),
+    STREAMING_SESSION("session:"),
+    STREAMING_HISTORY("session:history:"),
+    SESSION_LOCK("lock:session:");
 
     private final String prefix;
 

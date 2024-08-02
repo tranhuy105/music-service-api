@@ -7,4 +7,8 @@ public class Util {
     public static Long extractUserIdFromAuthentication(Authentication authentication) {
         return ((User) authentication.getPrincipal()).getId();
     }
+
+    public static User extractUserFromAuthentication(Authentication authentication) {
+        return ((User) authentication.getPrincipal());
+    }
 }
