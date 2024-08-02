@@ -1,7 +1,9 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
 import com.tranhuy105.musicserviceapi.dto.PlaylistTrackDto;
+import com.tranhuy105.musicserviceapi.dto.PlaylistTrackPositionDto;
 import com.tranhuy105.musicserviceapi.mapper.PlaylistSummaryRowMapper;
+import com.tranhuy105.musicserviceapi.mapper.PlaylistTrackPositionDtoRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.PlaylistTrackRowMapper;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
@@ -50,5 +52,11 @@ public class PlaylistDao implements PlaylistRepository {
                 LEFT JOIN playlist_track pt ON p.id = pt.playlist_id
                 GROUP BY p.id, p.name, p.cover_url""";
         return queryUtil.executeQueryWithOptions(baseQuery, queryOptions, new PlaylistSummaryRowMapper());
+    }
+
+    @Override
+    public List<PlaylistTrackPositionDto> findAllPlaylistTracksByIdRaw(@NonNull Long id) {
+        String sql = "SELECT * FROM playlist_track WHERE playlist_id = ?";
+        return jdbcTemplate.query(sql, new PlaylistTrackPositionDtoRowMapper(), id);
     }
 }

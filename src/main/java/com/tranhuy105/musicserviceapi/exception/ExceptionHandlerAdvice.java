@@ -1,6 +1,7 @@
 package com.tranhuy105.musicserviceapi.exception;
 
 import com.tranhuy105.musicserviceapi.dto.ExceptionResponseDto;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public class ExceptionHandlerAdvice {
         logger.error("Unhandled Exception: ",ex);
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(
                 ExceptionResponseDto.builder()
-                        .message("Internal Server Error: "+ ex.getMessage())
+                        .message("Unhandled Exception: "+ ex.getMessage())
                         .httpStatus(INTERNAL_SERVER_ERROR)
                         .build()
         );
@@ -111,5 +112,11 @@ public class ExceptionHandlerAdvice {
     public ResponseEntity<ExceptionResponseDto> handleException(DataIntegrityViolationException ex) {
         return ResponseEntity.status(BAD_REQUEST).body(ExceptionResponseDto.builder()
                 .message("Constraint Fail").httpStatus(BAD_REQUEST).details(Map.of("SQLException", ex.getMessage())).build());
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ExceptionResponseDto> handleException(ExpiredJwtException ex) {
+        return ResponseEntity.status(BAD_REQUEST).body(ExceptionResponseDto.builder()
+                .message(ex.getMessage()).httpStatus(BAD_REQUEST).build());
     }
 }
