@@ -59,10 +59,10 @@ public class S3Service implements StorageService{
     }
 
     @Override
-    public URL generatePresignedUrl(String trackId) throws FileNotFoundException {
-        if (!doesObjectExist(trackId)) {
-            throw new FileNotFoundException("The specified key does not exist in the bucket.");
-        }
+    public URL generatePresignedUrl(String trackId) {
+//        if (!doesObjectExist(trackId)) {
+//            throw new FileNotFoundException("The specified key does not exist in the bucket.");
+//        }
 
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();

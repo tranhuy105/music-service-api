@@ -1,6 +1,6 @@
 package com.tranhuy105.musicserviceapi.repository.api;
 
-import com.tranhuy105.musicserviceapi.dto.PlaylistTrackPositionDto;
+import com.tranhuy105.musicserviceapi.dto.TrackQueueDto;
 import com.tranhuy105.musicserviceapi.model.Page;
 import com.tranhuy105.musicserviceapi.model.Playlist;
 import com.tranhuy105.musicserviceapi.model.PlaylistTrack;
@@ -16,6 +16,4 @@ public interface PlaylistRepository {
     Optional<Playlist> findPlaylistById(@NonNull Long id);
 
     Page<Playlist> findAllPlaylist(@NonNull QueryOptions queryOptions);
-
-    List<PlaylistTrackPositionDto> findAllPlaylistTracksByIdRaw(@NonNull Long id);
 }

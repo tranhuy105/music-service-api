@@ -1,9 +1,6 @@
 package com.tranhuy105.musicserviceapi.controller;
 
-import com.tranhuy105.musicserviceapi.model.PlaybackMode;
-import com.tranhuy105.musicserviceapi.model.StreamingHistory;
-import com.tranhuy105.musicserviceapi.model.StreamingSession;
-import com.tranhuy105.musicserviceapi.model.User;
+import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.service.PlayerService;
 import com.tranhuy105.musicserviceapi.service.StorageService;
 import com.tranhuy105.musicserviceapi.utils.Util;
@@ -29,27 +26,30 @@ public class PlayerController {
     private final PlayerService playerService;
 
     @GetMapping("/play/{trackId}")
-    public ResponseEntity<String> playTrack(Authentication authentication,
+    public ResponseEntity<URL> playTrack(Authentication authentication,
                          @PathVariable Long trackId,
-                         @RequestParam(value = "playlist", required = false) Long playlistId,
-                         @RequestParam(value = "mode", required = false)
-                                                @Valid
+                         @RequestParam(value = "source_id") Long sourceId,
+                         @RequestParam(value = "source_type") @Valid
+                                                @Pattern(regexp = "playlist|album|track|liked",
+                                                        message = "unsupported source type")
+                                                String sourceType,
+                         @RequestParam(value = "mode", required = false) @Valid
                                                 @Pattern(regexp = "shuffle|repeat|sequential",
                                                         message = "play mode must be either 'shuffle' or 'repeat' or 'sequential'")
-                                                String playmode,
+                                                String playmode, // default will be SHUFFLE if there is no session
                          HttpServletRequest request
-    ) throws FileNotFoundException {
+    ){
         User user = getUser(authentication);
         String deviceId = request.getHeader("User-Agent");
-//      URL url = storageService.generatePresignedUrl(trackId.toString());
+        URL url = storageService.generatePresignedUrl(trackId.toString());
         playerService.playTrack(
                 deviceId,
                 user,
                 trackId,
-                playlistId,
-                PlaybackMode.valueOf(playmode.toUpperCase())
+                new StreamingSource(sourceId, SourceType.valueOf(sourceType.toUpperCase())),
+                playmode != null ? PlaybackMode.valueOf(playmode.toUpperCase()) : null
         );
-        return ResponseEntity.ok("url");
+        return ResponseEntity.ok(url);
     }
 
     @PutMapping("/resume")
@@ -68,36 +68,31 @@ public class PlayerController {
         playerService.pauseSession(deviceId, user);
     }
 
-    @GetMapping("/queue")
-    public ResponseEntity<Queue<Long>> getQueue(
-            Authentication authentication,
-            HttpServletRequest request
-    ) {
-        return ResponseEntity.ok(new LinkedList<>());
-    }
-
-    @PostMapping("/queue")
-    public void addItemToQueue(Authentication authentication,
+    @PostMapping("/queue/{trackId}")
+    public void addItemToQueue(@PathVariable Long trackId,
+                               Authentication authentication,
                                HttpServletRequest request) {
-
+        User user = getUser(authentication);
+        String deviceId = request.getHeader("User-Agent");
+        playerService.addToQueue(deviceId, user, trackId);
     }
 
     @PostMapping("/next")
-    public ResponseEntity<Long> next(Authentication authentication,
+    public ResponseEntity<URL> next(Authentication authentication,
                      HttpServletRequest request) {
         User user = getUser(authentication);
         String deviceId = request.getHeader("User-Agent");
         Long nextTrackId = playerService.nextTrack(deviceId, user);
-        return ResponseEntity.ok(nextTrackId);
+        return ResponseEntity.ok(storageService.generatePresignedUrl(nextTrackId.toString()));
     }
 
     @PostMapping("/previous")
-    public ResponseEntity<Long> previous(Authentication authentication,
+    public ResponseEntity<URL> previous(Authentication authentication,
                          HttpServletRequest request) {
         User user = getUser(authentication);
         String deviceId = request.getHeader("User-Agent");
         Long preTrackId = playerService.prevTrack(deviceId, user);
-        return ResponseEntity.ok(preTrackId);
+        return ResponseEntity.ok(storageService.generatePresignedUrl(preTrackId.toString()));
     }
 
     @PutMapping("/repeat")

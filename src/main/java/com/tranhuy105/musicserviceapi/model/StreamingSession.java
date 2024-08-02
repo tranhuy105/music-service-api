@@ -24,7 +24,7 @@ public class StreamingSession {
     private boolean isPlaying; // Indicates if the session is currently playing pr pausing
     private TrackDetail currentTrack; // Current track being played
 
-    private Long playlistId; // ID of the playlist, can be null
+    private StreamingSource streamingSource;
     private PlaybackMode playbackMode = PlaybackMode.SHUFFLE;
 
     private long lastRecordedTime; // Timestamp of the last recorded activity
@@ -33,14 +33,14 @@ public class StreamingSession {
 
     private Queue<Long> trackQueue= new LinkedList<>();
 
-    public StreamingSession(User user, String deviceId) {
+    public StreamingSession(User user, String deviceId, StreamingSource streamingSource, PlaybackMode playbackMode) {
         this.userId = user.getId();
         this.isPlaying = false;
         this.currentTrack = null;
-        this.playlistId = null;
-
-        this.lastRecordedTime = 0L;
-        this.accumulatedTime = 0L;
+        this.streamingSource = streamingSource;
+        if (playbackMode != null) {
+            this.playbackMode = playbackMode;
+        }
         this.deviceId = deviceId;
     }
 

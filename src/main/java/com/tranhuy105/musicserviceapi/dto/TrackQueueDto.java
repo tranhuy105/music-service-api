@@ -1,5 +1,6 @@
 package com.tranhuy105.musicserviceapi.dto;
 
+import com.tranhuy105.musicserviceapi.model.SourceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,8 +12,9 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PlaylistTrackPositionDto {
-    private Long playlistId;
+public class TrackQueueDto {
+    private Long sourceId;
+    private SourceType sourceType;
     private Integer position;
     private Long trackId;
     private Long addedBy;
