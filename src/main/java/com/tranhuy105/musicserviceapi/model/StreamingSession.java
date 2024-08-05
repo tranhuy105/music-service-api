@@ -1,6 +1,5 @@
 package com.tranhuy105.musicserviceapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -79,6 +78,8 @@ public class StreamingSession {
     public void validateDevice(String deviceId) {
         if (this.isPlaying && !this.deviceId.equals(deviceId)) {
             throw new AccessDeniedException("Another device is currently streaming.");
+        } else {
+            this.deviceId = deviceId;
         }
     }
 

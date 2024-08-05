@@ -13,4 +13,5 @@ public class Track {
     private Long id;
     private String title;
     private Integer duration;
+    private Long streamCount;
 }

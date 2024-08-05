@@ -1,5 +1,6 @@
 package com.tranhuy105.musicserviceapi.model;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,6 @@ public class Artist {
     private String stageName;
     private String bio;
     private String profilePictureUrl;
+    @NotNull
+    private Integer followerCount;
 }

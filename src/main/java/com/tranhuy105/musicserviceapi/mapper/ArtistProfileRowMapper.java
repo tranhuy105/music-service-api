@@ -16,6 +16,7 @@ public class ArtistProfileRowMapper implements RowMapper<ArtistProfile> {
         String stageName = rs.getString("artist_stage_name");
         String bio = rs.getString("artist_bio");
         String profilePictureUrl = rs.getString("artist_profile_picture_url");
+        Integer followerCount = rs.getInt("artist_follower_count");
 
         ArtistProfile artistProfile = new ArtistProfile();
         artistProfile.setId(artistId);
@@ -23,6 +24,7 @@ public class ArtistProfileRowMapper implements RowMapper<ArtistProfile> {
         artistProfile.setBio(bio);
         artistProfile.setProfilePictureUrl(profilePictureUrl);
         artistProfile.setAlbums(new ArrayList<>());
+        artistProfile.setFollowerCount(followerCount);
 
         do {
             long albumId = rs.getLong("album_id");

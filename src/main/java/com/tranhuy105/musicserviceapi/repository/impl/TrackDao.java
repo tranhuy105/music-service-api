@@ -43,6 +43,7 @@ public class TrackDao implements TrackRepository {
                        t.title AS track_title,
                        t.duration AS track_duration,
                        t.album_id,
+                       t.stream_count,
                        a.title AS album_title,
                        a.cover_url AS album_cover_url,
                        GROUP_CONCAT(aa.artist_id) AS artist_ids,

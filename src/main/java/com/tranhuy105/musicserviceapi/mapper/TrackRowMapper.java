@@ -12,7 +12,8 @@ public class TrackRowMapper implements RowMapper<Track> {
         return new Track(
                 rs.getLong("id"),
                 rs.getString("title"),
-                rs.getInt("duration")
+                rs.getInt("duration"),
+                rs.getLong("stream_count")
         );
     }
 }

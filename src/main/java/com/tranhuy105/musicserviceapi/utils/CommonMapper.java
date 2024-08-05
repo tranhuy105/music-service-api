@@ -15,6 +15,7 @@ public class CommonMapper {
         Long trackId = rs.getLong("track_id");
         String trackTitle = rs.getString("track_title");
         Integer trackDuration = rs.getInt("track_duration");
+        Long streamCount = rs.getLong("stream_count");
         Long albumId = rs.getLong("album_id");
         String albumTitle = rs.getString("album_title");
         String albumCoverUrl = rs.getString("album_cover_url");
@@ -39,6 +40,7 @@ public class CommonMapper {
         track.setTitle(trackTitle);
         track.setAlbum(trackAlbum);
         track.setDuration(trackDuration);
+        track.setStreamCount(streamCount);
 
         return track;
     }
