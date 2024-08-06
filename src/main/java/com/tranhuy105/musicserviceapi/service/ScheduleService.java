@@ -22,7 +22,7 @@ public class ScheduleService {
         streamCountCache.merge(trackId, 1L, Long::sum);
     }
 
-    @Scheduled(fixedRate = 60000) // Runs every minute
+    @Scheduled(fixedRate = 3600000) // Runs every hour
     @Transactional
     public void updateStreamCounts() {
         if (streamCountCache.isEmpty()) {

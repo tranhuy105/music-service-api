@@ -16,4 +16,17 @@ public interface PlaylistRepository {
     Optional<Playlist> findPlaylistById(@NonNull Long id);
 
     Page<Playlist> findAllPlaylist(@NonNull QueryOptions queryOptions);
+
+    void addPlaylist(@NonNull Playlist playlist);
+
+    void updatePlaylist(@NonNull Long id, @NonNull Playlist playlist);
+
+    void insertTrackToEnd(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long addedBy);
+
+    void deleteTrack(@NonNull Long playlistId, @NonNull Long trackId);
+
+    void moveTrack(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long newPosition);
+
+    boolean trackExistsInPlaylist(@NonNull Long playlistId, @NonNull Long trackId);
+
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -47,5 +48,50 @@ public class PlaylistDao implements PlaylistRepository {
                 LEFT JOIN playlist_track pt ON p.id = pt.playlist_id
                 GROUP BY p.id, p.name, p.cover_url""";
         return queryUtil.executeQueryWithOptions(baseQuery, queryOptions, new PlaylistSummaryRowMapper());
+    }
+
+    @Override
+    public void addPlaylist(@NonNull Playlist playlist) {
+        String sql = "INSERT INTO playlists (user_id, name, description, public, cover_url) VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, playlist.getUserId(), playlist.getName(), playlist.getDescription(), playlist.getIsPublic(), playlist.getCoverUrl());
+    }
+
+    @Override
+    public void updatePlaylist(@NonNull Long id, @NonNull Playlist playlist) {
+        String sql = "UPDATE playlists SET name = ?, description = ?, public = ?, cover_url = ? WHERE id = ?";
+        jdbcTemplate.update(sql, playlist.getName(), playlist.getDescription(), playlist.getIsPublic(), playlist.getCoverUrl(), id);
+    }
+
+    @Override
+    @Transactional
+    public void insertTrackToEnd(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long addedBy) {
+        String sql = "CALL InsertPlaylistTrackAtEnd(?, ?, ?)";
+        jdbcTemplate.update(sql, playlistId, trackId, addedBy);
+    }
+
+    @Override
+    @Transactional
+    public void deleteTrack(@NonNull Long playlistId, @NonNull Long trackId) {
+        String sql = "CALL DeletePlaylistTrack(?, ?)";
+        jdbcTemplate.update(sql, playlistId, trackId);
+    }
+
+    @Override
+    @Transactional
+    public void moveTrack(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long newPosition) {
+        String sql = "CALL MovePlaylistTrack(?, ?, ?)";
+        try {
+            jdbcTemplate.update(sql, playlistId, trackId, newPosition);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            throw exception;
+        }
+    }
+
+    @Override
+    public boolean trackExistsInPlaylist(@NonNull Long playlistId, @NonNull Long trackId) {
+        String sql = "SELECT EXISTS(SELECT 1 FROM playlist_track WHERE playlist_id = ? AND track_id = ?)";
+        Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, playlistId, trackId);
+        return exists != null && exists;
     }
 }
