@@ -16,8 +16,9 @@ public class LibraryController {
     private final LibraryService libraryService;
 
     @GetMapping("/following")
-    public ResponseEntity<Page<Artist>> getFollowingArtistList(Authentication authentication){
-        return ResponseEntity.ok().body(libraryService.findMyFollowedArtist(authentication, null));
+    public ResponseEntity<Page<Artist>> getFollowingArtistList(Authentication authentication,
+                                                               @RequestParam(value = "page", required = false) Integer page){
+        return ResponseEntity.ok().body(libraryService.findMyFollowedArtist(authentication, page));
     }
 
     @DeleteMapping("/following")
@@ -38,8 +39,9 @@ public class LibraryController {
     }
 
     @GetMapping("/tracks")
-    public ResponseEntity<Page<PlaylistTrack>> getSavedTrack(Authentication authentication){
-        return ResponseEntity.ok().body(libraryService.findMySavedTrack(authentication, null));
+    public ResponseEntity<Page<PlaylistTrack>> getSavedTrack(Authentication authentication,
+                                                             @RequestParam(value = "page", required = false) Integer page){
+        return ResponseEntity.ok().body(libraryService.findMySavedTrack(authentication, page));
     }
 
     @PutMapping("/tracks")
