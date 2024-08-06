@@ -1,6 +1,6 @@
 package com.tranhuy105.musicserviceapi.repository.api;
 
-import com.tranhuy105.musicserviceapi.dto.PlaylistTrackPositionDto;
+import com.tranhuy105.musicserviceapi.dto.TrackQueueDto;
 import com.tranhuy105.musicserviceapi.model.Page;
 import com.tranhuy105.musicserviceapi.model.Playlist;
 import com.tranhuy105.musicserviceapi.model.PlaylistTrack;
@@ -17,5 +17,16 @@ public interface PlaylistRepository {
 
     Page<Playlist> findAllPlaylist(@NonNull QueryOptions queryOptions);
 
-    List<PlaylistTrackPositionDto> findAllPlaylistTracksByIdRaw(@NonNull Long id);
+    void addPlaylist(@NonNull Playlist playlist);
+
+    void updatePlaylist(@NonNull Long id, @NonNull Playlist playlist);
+
+    void insertTrackToEnd(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long addedBy);
+
+    void deleteTrack(@NonNull Long playlistId, @NonNull Long trackId);
+
+    void moveTrack(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long newPosition);
+
+    boolean trackExistsInPlaylist(@NonNull Long playlistId, @NonNull Long trackId);
+
 }

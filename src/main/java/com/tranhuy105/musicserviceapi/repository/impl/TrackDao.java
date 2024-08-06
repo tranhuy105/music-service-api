@@ -1,17 +1,17 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
 import com.tranhuy105.musicserviceapi.dto.CreateTrackRequestDto;
+import com.tranhuy105.musicserviceapi.dto.TrackQueueDto;
 import com.tranhuy105.musicserviceapi.mapper.TrackDetailRowMapper;
+import com.tranhuy105.musicserviceapi.mapper.TrackQueueDtoRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.TrackRowMapper;
-import com.tranhuy105.musicserviceapi.model.Page;
-import com.tranhuy105.musicserviceapi.model.QueryOptions;
-import com.tranhuy105.musicserviceapi.model.Track;
-import com.tranhuy105.musicserviceapi.model.TrackDetail;
+import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.repository.api.TrackRepository;
 import com.tranhuy105.musicserviceapi.utils.QueryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -43,6 +43,7 @@ public class TrackDao implements TrackRepository {
                        t.title AS track_title,
                        t.duration AS track_duration,
                        t.album_id,
+                       t.stream_count,
                        a.title AS album_title,
                        a.cover_url AS album_cover_url,
                        GROUP_CONCAT(aa.artist_id) AS artist_ids,
@@ -77,5 +78,23 @@ public class TrackDao implements TrackRepository {
                         "p_duration", dto.getDuration())
         );
         return (Long) out.get("p_track_id");
+    }
+
+    @Override
+    public List<TrackQueueDto> findTrackQueueFromPlaylist(@NonNull Long playlistId) {
+        String sql = "SELECT * FROM playlist_track WHERE playlist_id = ?";
+        return jdbcTemplate.query(sql, new TrackQueueDtoRowMapper(SourceType.PLAYLIST), playlistId);
+    }
+
+    @Override
+    public List<TrackQueueDto> findTrackQueueFromAlbum(@NonNull Long albumId) {
+        String sql = "SELECT * FROM tracks WHERE album_id = ? ORDER BY id";
+        return jdbcTemplate.query(sql, new TrackQueueDtoRowMapper(SourceType.ALBUM), albumId);
+    }
+
+    @Override
+    public List<TrackQueueDto> findTrackQueueFromLiked(@NonNull Long userId) {
+        String sql = "SELECT * FROM likes WHERE user_id = ? ORDER BY track_id";
+        return jdbcTemplate.query(sql, new TrackQueueDtoRowMapper(SourceType.LIKED), userId);
     }
 }

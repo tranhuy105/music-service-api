@@ -1,19 +1,15 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
-import com.tranhuy105.musicserviceapi.dto.PlaylistTrackDto;
-import com.tranhuy105.musicserviceapi.dto.PlaylistTrackPositionDto;
 import com.tranhuy105.musicserviceapi.mapper.PlaylistSummaryRowMapper;
-import com.tranhuy105.musicserviceapi.mapper.PlaylistTrackPositionDtoRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.PlaylistTrackRowMapper;
 import com.tranhuy105.musicserviceapi.model.*;
-import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
-import com.tranhuy105.musicserviceapi.model.ref.TrackAlbum;
 import com.tranhuy105.musicserviceapi.repository.api.PlaylistRepository;
 import com.tranhuy105.musicserviceapi.utils.QueryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -55,8 +51,47 @@ public class PlaylistDao implements PlaylistRepository {
     }
 
     @Override
-    public List<PlaylistTrackPositionDto> findAllPlaylistTracksByIdRaw(@NonNull Long id) {
-        String sql = "SELECT * FROM playlist_track WHERE playlist_id = ?";
-        return jdbcTemplate.query(sql, new PlaylistTrackPositionDtoRowMapper(), id);
+    public void addPlaylist(@NonNull Playlist playlist) {
+        String sql = "INSERT INTO playlists (user_id, name, description, public, cover_url) VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, playlist.getUserId(), playlist.getName(), playlist.getDescription(), playlist.getIsPublic(), playlist.getCoverUrl());
+    }
+
+    @Override
+    public void updatePlaylist(@NonNull Long id, @NonNull Playlist playlist) {
+        String sql = "UPDATE playlists SET name = ?, description = ?, public = ?, cover_url = ? WHERE id = ?";
+        jdbcTemplate.update(sql, playlist.getName(), playlist.getDescription(), playlist.getIsPublic(), playlist.getCoverUrl(), id);
+    }
+
+    @Override
+    @Transactional
+    public void insertTrackToEnd(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long addedBy) {
+        String sql = "CALL InsertPlaylistTrackAtEnd(?, ?, ?)";
+        jdbcTemplate.update(sql, playlistId, trackId, addedBy);
+    }
+
+    @Override
+    @Transactional
+    public void deleteTrack(@NonNull Long playlistId, @NonNull Long trackId) {
+        String sql = "CALL DeletePlaylistTrack(?, ?)";
+        jdbcTemplate.update(sql, playlistId, trackId);
+    }
+
+    @Override
+    @Transactional
+    public void moveTrack(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long newPosition) {
+        String sql = "CALL MovePlaylistTrack(?, ?, ?)";
+        try {
+            jdbcTemplate.update(sql, playlistId, trackId, newPosition);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            throw exception;
+        }
+    }
+
+    @Override
+    public boolean trackExistsInPlaylist(@NonNull Long playlistId, @NonNull Long trackId) {
+        String sql = "SELECT EXISTS(SELECT 1 FROM playlist_track WHERE playlist_id = ? AND track_id = ?)";
+        Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, playlistId, trackId);
+        return exists != null && exists;
     }
 }

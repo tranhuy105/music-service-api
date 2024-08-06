@@ -19,8 +19,7 @@ CREATE TABLE playlist_track (
   PRIMARY KEY (playlist_id, track_id),
   FOREIGN KEY (playlist_id) REFERENCES playlists(id),
   FOREIGN KEY (track_id) REFERENCES tracks(id),
-  FOREIGN KEY (added_by) REFERENCES users(id),
-  CONSTRAINT unique_position_per_playlist UNIQUE (playlist_id, position)
+  FOREIGN KEY (added_by) REFERENCES users(id)
 );
 
 -- Create indexes
@@ -126,7 +125,7 @@ BEGIN
 
     IF p_old_position != p_new_position THEN
         UPDATE playlist_track
-        SET position = NULL
+        SET position = -9999
         WHERE playlist_id = p_playlist_id AND track_id = p_track_id;
 
         IF p_old_position < p_new_position THEN

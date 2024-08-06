@@ -13,7 +13,8 @@ public class ArtistRowMapper implements RowMapper<Artist> {
                 rs.getLong("id"),
                 rs.getString("stage_name"),
                 rs.getString("bio"),
-                rs.getString("profile_picture_url")
+                rs.getString("profile_picture_url"),
+                rs.getInt("follower_count")
         );
     }
 }
