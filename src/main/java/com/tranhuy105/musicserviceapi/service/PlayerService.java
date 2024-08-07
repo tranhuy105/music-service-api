@@ -92,12 +92,12 @@ public class PlayerService {
 
             Optional<TrackDetail> prevTrack = getTrackFromHistory(user, session.getHistoryIndex());
             if (prevTrack.isEmpty()){
-                return storageService.generatePresignedUrl(session.getCurrentTrack());
+                return storageService.generateUrl(session.getCurrentTrack());
             }
 
             switchSessionTrack(session, prevTrack.get());
             cacheService.cacheStreamingSession(user.getId(), session);
-            return storageService.generatePresignedUrl(session.getCurrentTrack());
+            return storageService.generateUrl(session.getCurrentTrack());
         });
     }
 
@@ -180,12 +180,12 @@ public class PlayerService {
         if (nextItem.itemType() == QueueItem.ItemType.AD) {
             Advertisement ad = adService.getAdById(nextItem.id());
             adService.handleAdPlayback(ad, session);
-            return storageService.generatePresignedUrl(ad);
+            return storageService.generateUrl(ad);
         } else {
             TrackDetail nextTrack = trackService.findTrackById(nextItem.id());
             session.resetHistoryIndex();
             switchSessionTrack(session, nextTrack);
-            return storageService.generatePresignedUrl(nextTrack);
+            return storageService.generateUrl(nextTrack);
         }
     }
 

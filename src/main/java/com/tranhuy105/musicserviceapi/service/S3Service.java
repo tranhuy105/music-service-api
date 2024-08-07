@@ -4,6 +4,8 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
+import com.amazonaws.services.cloudfront.util.SignerUtils;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -17,8 +19,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 
 @Service
@@ -38,6 +41,19 @@ public class S3Service implements StorageService{
 
     @Value("${s3.region}")
     private String region;
+
+    @Value("${cdn.enabled:false}")
+    private boolean cdnEnabled;
+
+    @Value("${cdn.cloudfront.distributionDomainName}")
+    private String cloudFrontDistributionDomainName;
+
+    @Value("${cdn.cloudfront.keyPairId}")
+    private String cloudFrontKeyPairId;
+
+    @Value("${cdn.cloudfront.privateKeyPath}")
+    private String cloudFrontPrivateKeyPath;
+
     private static final long URL_EXPIRATION_TIME_MILLIS = 1000 * 60 * 60; // 1 hour
     private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
 
@@ -60,7 +76,44 @@ public class S3Service implements StorageService{
     }
 
     @Override
-    public URL generatePresignedUrl(MediaItem mediaItem) {
+    public URL generateUrl(MediaItem mediaItem) {
+        if (cdnEnabled) {
+            return generateCloudFrontSignedUrl(mediaItem);
+        } else {
+            return generateS3PresignedUrl(mediaItem);
+        }
+    }
+
+    private URL generateCloudFrontSignedUrl(MediaItem mediaItem) {
+        String uri = mediaItem.getURI();
+        String itemId = extractIdFromURI(uri);
+        String type = extractTypeFromURI(uri);
+
+        if (itemId == null || type == null) {
+            throw new IllegalArgumentException("Invalid URI format");
+        }
+
+        try {
+            File privateKeyFile = new File(cloudFrontPrivateKeyPath);
+
+            Date expirationDate = getExpiration();
+            String resourceUrl = String.format("https://%s/%s/%s", cloudFrontDistributionDomainName, type, itemId);
+
+            return new URL(CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
+                    SignerUtils.Protocol.https,
+                    cloudFrontDistributionDomainName,
+                    privateKeyFile,
+                    resourceUrl,
+                    cloudFrontKeyPairId,
+                    expirationDate
+            ));
+        } catch (IOException | InvalidKeySpecException e) {
+            logger.error("Error generating CloudFront signed URL: " + e.getMessage(), e);
+            throw new RuntimeException("Error generating CloudFront signed URL", e);
+        }
+    }
+
+    private URL generateS3PresignedUrl(MediaItem mediaItem) {
         String uri = mediaItem.getURI();
         String itemId = extractIdFromURI(uri);
         String type = extractTypeFromURI(uri);
