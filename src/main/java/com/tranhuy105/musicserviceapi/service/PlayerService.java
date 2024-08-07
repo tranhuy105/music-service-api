@@ -1,6 +1,5 @@
 package com.tranhuy105.musicserviceapi.service;
 
-import com.tranhuy105.musicserviceapi.dto.TrackQueueDto;
 import com.tranhuy105.musicserviceapi.exception.StreamingException;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.utils.CachePrefix;
@@ -10,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
 import java.util.*;
 
 @Service
@@ -17,42 +17,48 @@ import java.util.*;
 public class PlayerService {
     private final CacheService cacheService;
     private final TrackService trackService;
-    private final StreamingSourceService streamingSourceService;
+    private final StorageService storageService;
+    private final AdService adService;
+    private final QueueService queueService;
 
     private final Logger logger = LoggerFactory.getLogger(PlayerService.class);
     private static final long VALID_STREAM_THRESHOLD = 30000;
-    private static final int QUEUE_SIZE = 30;
+    private static final int AD_INTERVAL = 10; // Play ad every 10 tracks for non-premium users
 
     public StreamingSession getStreamingSession(User user) {
         return cacheService.getStreamingSessionCache(user.getId());
     }
 
-    public void playTrack(String deviceId,
+    public URL playTrack(String deviceId,
                           User user,
                           Long trackId,
                           @NonNull StreamingSource streamingSource,
                           PlaybackMode playbackMode) {
         String sessionLock = getStreamingSessionLock(user);
-        cacheService.executeWithLock(sessionLock, () -> {
+        return cacheService.executeWithLock(sessionLock, () -> {
             StreamingSession session = getStreamingSession(user);
             if (session == null) {
                 session = createStreamingSession(user, streamingSource, deviceId, playbackMode);
+                session.initializeAdSettings(AD_INTERVAL);
             }
             session.validateDevice(deviceId);
 
-            TrackDetail track = trackService.findTrackById(trackId);
+            session.getItemQueue().addFirst(new QueueItem(trackId, QueueItem.ItemType.TRACK));
+            adService.processAdService(user, session);
+            URL url = processToNextItemInQueue(session);
             session.resetHistoryIndex();
-            switchSessionTrack(session, track);
 
-            if ((!Objects.equals(streamingSource, session.getStreamingSource()) || session.getTrackQueue().isEmpty())) {
+            if ((!Objects.equals(streamingSource, session.getStreamingSource()) || session.getItemQueue().isEmpty())) {
                 session.setStreamingSource(streamingSource);
-                session.setTrackQueue(generateTrackQueue(session));
+                session.setItemQueue(queueService.generateTrackQueue(session));
             }
+
             cacheService.cacheStreamingSession(user.getId(), session);
+            return url;
         });
     }
 
-    public Long nextTrack(String deviceId, User user) {
+    public URL nextTrack(String deviceId, User user) {
         String sessionLock = getStreamingSessionLock(user);
         return cacheService.executeWithLock(sessionLock, () -> {
             StreamingSession session = getStreamingSession(user);
@@ -65,16 +71,16 @@ public class PlayerService {
             }
 
             session.validateDevice(deviceId);
-            ensureQueueIsNotEmpty(session);
-            TrackDetail nextTrack = trackService.findTrackById(session.getTrackQueue().poll());
+            queueService.ensureQueueIsNotEmpty(session);
+            adService.processAdService(user, session);
+            URL url = processToNextItemInQueue(session);
             session.resetHistoryIndex();
-            switchSessionTrack(session, nextTrack);
             cacheService.cacheStreamingSession(user.getId(), session);
-            return session.getCurrentTrack().getId();
+            return url;
         });
     }
 
-    public Long prevTrack(String deviceId, User user) {
+    public URL prevTrack(String deviceId, User user) {
         String sessionLock = getStreamingSessionLock(user);
         return cacheService.executeWithLock(sessionLock, () -> {
             StreamingSession session = getStreamingSession(user);
@@ -86,24 +92,13 @@ public class PlayerService {
 
             Optional<TrackDetail> prevTrack = getTrackFromHistory(user, session.getHistoryIndex());
             if (prevTrack.isEmpty()){
-                return session.getCurrentTrack().getId();
+                return storageService.generatePresignedUrl(session.getCurrentTrack());
             }
 
             switchSessionTrack(session, prevTrack.get());
             cacheService.cacheStreamingSession(user.getId(), session);
-            return session.getCurrentTrack().getId();
+            return storageService.generatePresignedUrl(session.getCurrentTrack());
         });
-    }
-
-    private Optional<TrackDetail> getTrackFromHistory(User user, int index) {
-        String key = cacheService.getCacheKey(CachePrefix.STREAMING_HISTORY, user.getId());
-        Object historyObject = cacheService.getRedisTemplate().opsForList().index(key, index);
-
-        if (historyObject instanceof StreamingHistory) {
-            return Optional.of(((StreamingHistory) historyObject).getTrack());
-        }
-
-        return Optional.empty();
     }
 
     public void pauseSession(String deviceId, User user) {
@@ -139,8 +134,8 @@ public class PlayerService {
             }
             session.validateDevice(deviceId);
             session.setPlaybackMode(newMode);
-            // generate new queue for new playmode
-            session.setTrackQueue(generateTrackQueue(session));
+            // generate new queue for new play mode
+            session.setItemQueue(queueService.generateTrackQueue(session));
 
             cacheService.cacheStreamingSession(user.getId(), session);
         });
@@ -154,7 +149,7 @@ public class PlayerService {
                 throw new StreamingException("No session found");
             }
             session.validateDevice(deviceId);
-            session.getTrackQueue().add(newTrackId);
+            session.getItemQueue().add(new QueueItem(newTrackId, QueueItem.ItemType.TRACK));
             cacheService.cacheStreamingSession(user.getId(), session);
         });
     }
@@ -166,6 +161,32 @@ public class PlayerService {
                 .opsForList()
                 .range(key, 0, -1);
         return convertToListeningHistoryList(historyObjects);
+    }
+
+    private Optional<TrackDetail> getTrackFromHistory(User user, int index) {
+        String key = cacheService.getCacheKey(CachePrefix.STREAMING_HISTORY, user.getId());
+        Object historyObject = cacheService.getRedisTemplate().opsForList().index(key, index);
+
+        if (historyObject instanceof StreamingHistory) {
+            return Optional.of(((StreamingHistory) historyObject).getTrack());
+        }
+
+        return Optional.empty();
+    }
+
+    private URL processToNextItemInQueue(StreamingSession session) {
+        QueueItem nextItem = session.getItemQueue().poll();
+        if (nextItem == null) return null;
+        if (nextItem.itemType() == QueueItem.ItemType.AD) {
+            Advertisement ad = adService.getAd(nextItem.id().toString());
+            adService.handleAdPlayback(ad, session);
+            return storageService.generatePresignedUrl(ad);
+        } else {
+            TrackDetail nextTrack = trackService.findTrackById(nextItem.id());
+            session.resetHistoryIndex();
+            switchSessionTrack(session, nextTrack);
+            return storageService.generatePresignedUrl(nextTrack);
+        }
     }
 
     private void switchSessionTrack(StreamingSession session, TrackDetail track) {
@@ -180,67 +201,6 @@ public class PlayerService {
 
     private StreamingSession createStreamingSession(User user, StreamingSource streamingSource, String deviceId, PlaybackMode playbackMode) {
         return new StreamingSession(user, deviceId, streamingSource, playbackMode);
-    }
-
-    private Queue<Long> generateTrackQueue(StreamingSession session) {
-        Queue<Long> trackQueue = new LinkedList<>();
-
-        if (session.getPlaybackMode() == PlaybackMode.REPEAT) {
-            if (session.getCurrentTrack() != null) {
-                trackQueue.add(session.getCurrentTrack().getId());
-            }
-            return trackQueue;
-        }
-
-        List<TrackQueueDto> tracks = streamingSourceService.getTracks(session.getStreamingSource());
-
-        if (tracks.isEmpty()) {
-            if (session.getCurrentTrack() != null) {
-                trackQueue.add(session.getCurrentTrack().getId());
-            }
-            return trackQueue;
-        }
-
-
-        PlaybackMode playbackMode = session.getPlaybackMode();
-        Long currentTrackId = session.getCurrentTrack() != null ? session.getCurrentTrack().getId() : null;
-
-        if (playbackMode == PlaybackMode.SHUFFLE) {
-            Collections.shuffle(tracks);
-            trackQueue.addAll(tracks.stream().map(TrackQueueDto::getTrackId).limit(QUEUE_SIZE).toList());
-        }
-
-        if (playbackMode == PlaybackMode.SEQUENTIAL) {
-            tracks.sort(Comparator.comparingInt(TrackQueueDto::getPosition));
-            if (currentTrackId != null) {
-                int currentIndex = tracks.stream()
-                        .map(TrackQueueDto::getTrackId)
-                        .toList()
-                        .indexOf(currentTrackId);
-
-                if (currentIndex != -1) {
-                    // Add tracks from current position to the end
-                    // plus 1 to skip the current track to be added again to the queue
-                    for (int i = currentIndex + 1; i < tracks.size() && trackQueue.size() < QUEUE_SIZE; i++) {
-                        trackQueue.add(tracks.get(i).getTrackId());
-                    }
-                    // Add tracks from the start to the current position if needed
-                    for (int i = 0; i < currentIndex && trackQueue.size() < QUEUE_SIZE; i++) {
-                        trackQueue.add(tracks.get(i).getTrackId());
-                    }
-                }
-            } else {
-                trackQueue.addAll(tracks.stream().map(TrackQueueDto::getTrackId).limit(QUEUE_SIZE).toList());
-            }
-        }
-
-        return trackQueue;
-    }
-
-    private void ensureQueueIsNotEmpty(StreamingSession session) {
-        if (session.getTrackQueue().isEmpty()) {
-            session.setTrackQueue(generateTrackQueue(session));
-        }
     }
 
     private String getStreamingSessionLock(User user) {

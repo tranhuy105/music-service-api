@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.tranhuy105.musicserviceapi.model.MediaItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,36 +60,74 @@ public class S3Service implements StorageService{
     }
 
     @Override
-    public URL generatePresignedUrl(String trackId) {
-//        if (!doesObjectExist(trackId)) {
-//            throw new FileNotFoundException("The specified key does not exist in the bucket.");
-//        }
+    public URL generatePresignedUrl(MediaItem mediaItem) {
+        String uri = mediaItem.getURI();
+        String itemId = extractIdFromURI(uri);
+        String type = extractTypeFromURI(uri);
 
-        Date expiration = new Date();
-        long expTimeMillis = expiration.getTime();
-        expTimeMillis += URL_EXPIRATION_TIME_MILLIS;
-        expiration.setTime(expTimeMillis);
+        if (itemId == null || type == null) {
+            throw new IllegalArgumentException("Invalid URI format");
+        }
 
-        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, trackId)
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, type + "/" + itemId)
                 .withMethod(HttpMethod.GET)
-                .withExpiration(expiration);
-
+                .withExpiration(getExpiration());
         return s3Client.generatePresignedUrl(generatePresignedUrlRequest);
     }
 
     @Override
-    public void uploadTrack(File file, String trackId) {
+    public void uploadMediaItem(File file, String mediaId, String mediaType) {
         try {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, trackId, file);
+            String s3Key = String.format("%s/%s", mediaType, mediaId);
+
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, s3Key, file);
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.length());
             putObjectRequest.setMetadata(metadata);
+
             s3Client.putObject(putObjectRequest);
-            logger.info("Upload completed with trackId: " + trackId);
+            logger.info("Upload completed with mediaId: " + mediaId + " and mediaType: " + mediaType);
         } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new RuntimeException("Error uploading to s3");
+            logger.error("Error uploading to S3: " + e.getMessage(), e);
+            throw new RuntimeException("Error uploading to S3", e);
         }
+    }
+
+
+    private String extractIdFromURI(String uri) {
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
+
+        // Extract the ID based on URI format
+        // Example format: spotify:track:12345 or spotify:ad:67890
+        String[] parts = uri.split(":");
+        if (parts.length == 3) {
+            return parts[2];
+        }
+
+        return null;
+    }
+
+    private String extractTypeFromURI(String uri) {
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
+
+        String[] parts = uri.split(":");
+        if (parts.length == 3) {
+            return parts[1];
+        }
+
+        return null;
+    }
+
+    private Date getExpiration() {
+        Date expiration = new Date();
+        long expTimeMillis = expiration.getTime();
+        expTimeMillis += URL_EXPIRATION_TIME_MILLIS;
+        expiration.setTime(expTimeMillis);
+        return expiration;
     }
 
     private boolean doesObjectExist(String trackId) {
