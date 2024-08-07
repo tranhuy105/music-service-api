@@ -6,6 +6,7 @@ import com.tranhuy105.musicserviceapi.utils.CachePrefix;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class PlayerService {
     private final StorageService storageService;
     private final AdService adService;
     private final QueueService queueService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final Logger logger = LoggerFactory.getLogger(PlayerService.class);
     private static final long VALID_STREAM_THRESHOLD = 30000;
@@ -211,8 +213,8 @@ public class PlayerService {
         String key = cacheService.getCacheKey(CachePrefix.STREAMING_HISTORY, userId);
         cacheService.getRedisTemplate().opsForList().leftPush(key, history);
         if (history.getListeningTime() >= VALID_STREAM_THRESHOLD) {
-            // TODO: Produce an event
-            logger.info("Successful stream: " + history);
+            // async event
+            eventPublisher.publishEvent(new SuccessfulStreamEvent(this, userId, history));
         }
     }
 

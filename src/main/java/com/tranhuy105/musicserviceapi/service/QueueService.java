@@ -60,6 +60,8 @@ public class QueueService {
                     for (int i = 0; i < currentIndex && trackQueue.size() < QUEUE_SIZE; i++) {
                         trackQueue.add(new QueueItem(tracks.get(i).getTrackId(), QueueItem.ItemType.TRACK));
                     }
+                } else {
+                    trackQueue.addAll(tracks.stream().map(track -> new QueueItem(track.getTrackId(), QueueItem.ItemType.TRACK)).limit(QUEUE_SIZE).toList());
                 }
             } else {
                 trackQueue.addAll(tracks.stream().map(track -> new QueueItem(track.getTrackId(), QueueItem.ItemType.TRACK)).limit(QUEUE_SIZE).toList());
