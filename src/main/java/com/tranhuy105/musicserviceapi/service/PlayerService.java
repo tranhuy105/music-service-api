@@ -94,12 +94,12 @@ public class PlayerService {
 
             Optional<TrackDetail> prevTrack = getTrackFromHistory(user, session.getHistoryIndex());
             if (prevTrack.isEmpty()){
-                return storageService.generateUrl(session.getCurrentTrack());
+                return storageService.generateUrl(session.getCurrentMedia());
             }
 
             switchSessionTrack(session, prevTrack.get());
             cacheService.cacheStreamingSession(user.getId(), session);
-            return storageService.generateUrl(session.getCurrentTrack());
+            return storageService.generateUrl(session.getCurrentMedia());
         });
     }
 
