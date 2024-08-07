@@ -178,7 +178,7 @@ public class PlayerService {
         QueueItem nextItem = session.getItemQueue().poll();
         if (nextItem == null) return null;
         if (nextItem.itemType() == QueueItem.ItemType.AD) {
-            Advertisement ad = adService.getAd(nextItem.id().toString());
+            Advertisement ad = adService.getAdById(nextItem.id());
             adService.handleAdPlayback(ad, session);
             return storageService.generatePresignedUrl(ad);
         } else {
