@@ -40,6 +40,15 @@ s3:
     url: http://localhost:9000
   region: us-east-1
 
+cdn:
+  enabled: false # should be true on production
+  cloudfront:
+    distributionDomainName: my-cloudfront-distribution.domain
+    keyPairId: my-cloudfront-key-pair-id
+    privateKeyPath: path/to/my/private-key.pem
+
+
+
 logging:
   level:
     com.tranhuy105.musicserviceapi: DEBUG

@@ -4,20 +4,24 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.cloudfront.CloudFrontUrlSigner;
+import com.amazonaws.services.cloudfront.util.SignerUtils;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.tranhuy105.musicserviceapi.model.MediaItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 
 @Service
@@ -37,6 +41,19 @@ public class S3Service implements StorageService{
 
     @Value("${s3.region}")
     private String region;
+
+    @Value("${cdn.enabled:false}")
+    private boolean cdnEnabled;
+
+    @Value("${cdn.cloudfront.distributionDomainName}")
+    private String cloudFrontDistributionDomainName;
+
+    @Value("${cdn.cloudfront.keyPairId}")
+    private String cloudFrontKeyPairId;
+
+    @Value("${cdn.cloudfront.privateKeyPath}")
+    private String cloudFrontPrivateKeyPath;
+
     private static final long URL_EXPIRATION_TIME_MILLIS = 1000 * 60 * 60; // 1 hour
     private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
 
@@ -59,36 +76,111 @@ public class S3Service implements StorageService{
     }
 
     @Override
-    public URL generatePresignedUrl(String trackId) {
-//        if (!doesObjectExist(trackId)) {
-//            throw new FileNotFoundException("The specified key does not exist in the bucket.");
-//        }
+    public URL generateUrl(MediaItem mediaItem) {
+        if (cdnEnabled) {
+            return generateCloudFrontSignedUrl(mediaItem);
+        } else {
+            return generateS3PresignedUrl(mediaItem);
+        }
+    }
 
-        Date expiration = new Date();
-        long expTimeMillis = expiration.getTime();
-        expTimeMillis += URL_EXPIRATION_TIME_MILLIS;
-        expiration.setTime(expTimeMillis);
+    private URL generateCloudFrontSignedUrl(MediaItem mediaItem) {
+        String uri = mediaItem.getURI();
+        String itemId = extractIdFromURI(uri);
+        String type = extractTypeFromURI(uri);
 
-        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, trackId)
+        if (itemId == null || type == null) {
+            throw new IllegalArgumentException("Invalid URI format");
+        }
+
+        try {
+            File privateKeyFile = new File(cloudFrontPrivateKeyPath);
+
+            Date expirationDate = getExpiration();
+            String resourceUrl = String.format("https://%s/%s/%s", cloudFrontDistributionDomainName, type, itemId);
+
+            return new URL(CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
+                    SignerUtils.Protocol.https,
+                    cloudFrontDistributionDomainName,
+                    privateKeyFile,
+                    resourceUrl,
+                    cloudFrontKeyPairId,
+                    expirationDate
+            ));
+        } catch (IOException | InvalidKeySpecException e) {
+            logger.error("Error generating CloudFront signed URL: " + e.getMessage(), e);
+            throw new RuntimeException("Error generating CloudFront signed URL", e);
+        }
+    }
+
+    private URL generateS3PresignedUrl(MediaItem mediaItem) {
+        String uri = mediaItem.getURI();
+        String itemId = extractIdFromURI(uri);
+        String type = extractTypeFromURI(uri);
+
+        if (itemId == null || type == null) {
+            throw new IllegalArgumentException("Invalid URI format");
+        }
+
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, type + "/" + itemId)
                 .withMethod(HttpMethod.GET)
-                .withExpiration(expiration);
-
+                .withExpiration(getExpiration());
         return s3Client.generatePresignedUrl(generatePresignedUrlRequest);
     }
 
     @Override
-    public void uploadTrack(File file, String trackId) {
+    public void uploadMediaItem(File file, String mediaId, String mediaType) {
         try {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, trackId, file);
+            String s3Key = String.format("%s/%s", mediaType, mediaId);
+
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, s3Key, file);
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.length());
             putObjectRequest.setMetadata(metadata);
+
             s3Client.putObject(putObjectRequest);
-            logger.info("Upload completed with trackId: " + trackId);
+            logger.info("Upload completed with mediaId: " + mediaId + " and mediaType: " + mediaType);
         } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new RuntimeException("Error uploading to s3");
+            logger.error("Error uploading to S3: " + e.getMessage(), e);
+            throw new RuntimeException("Error uploading to S3", e);
         }
+    }
+
+
+    private String extractIdFromURI(String uri) {
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
+
+        // Extract the ID based on URI format
+        // Example format: spotify:track:12345 or spotify:ad:67890
+        String[] parts = uri.split(":");
+        if (parts.length == 3) {
+            return parts[2];
+        }
+
+        return null;
+    }
+
+    private String extractTypeFromURI(String uri) {
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
+
+        String[] parts = uri.split(":");
+        if (parts.length == 3) {
+            return parts[1];
+        }
+
+        return null;
+    }
+
+    private Date getExpiration() {
+        Date expiration = new Date();
+        long expTimeMillis = expiration.getTime();
+        expTimeMillis += URL_EXPIRATION_TIME_MILLIS;
+        expiration.setTime(expTimeMillis);
+        return expiration;
     }
 
     private boolean doesObjectExist(String trackId) {

@@ -94,7 +94,7 @@ public class TrackDao implements TrackRepository {
 
     @Override
     public List<TrackQueueDto> findTrackQueueFromLiked(@NonNull Long userId) {
-        String sql = "SELECT * FROM likes WHERE user_id = ? ORDER BY track_id";
+        String sql = "SELECT * FROM likes WHERE user_id = ? ORDER BY liked_at DESC";
         return jdbcTemplate.query(sql, new TrackQueueDtoRowMapper(SourceType.LIKED), userId);
     }
 }

@@ -1,12 +1,12 @@
 package com.tranhuy105.musicserviceapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.function.Supplier;
 
 /**
@@ -30,9 +30,13 @@ public class StreamingSession {
     private long accumulatedTime; // Total accumulated time for the current track (in milliseconds)
     private String deviceId; // Identifier for the device playing the track
 
-    private Queue<Long> trackQueue= new LinkedList<>();
     // a pointer to track where is the previous track really is to avoid a loop between current and previous track
     private int historyIndex = -1;
+    private long lastPlayedAdTime;
+    private int adInterval; // Interval to play an ad, in track counts
+    private int adCounter;  // Counter to track how many tracks have been played since the last ad
+
+    private LinkedList<QueueItem> itemQueue = new LinkedList<>();
 
     public StreamingSession(User user, String deviceId, StreamingSource streamingSource, PlaybackMode playbackMode) {
         this.userId = user.getId();
@@ -62,7 +66,6 @@ public class StreamingSession {
     public StreamingHistory playTrack(TrackDetail newTrack) {
         TrackDetail prevTrack = this.currentTrack;
         if (prevTrack != null && Objects.equals(newTrack.getId(), prevTrack.getId())) {
-            System.out.println("Already playing that track");
             return null;
         }
         this.currentTrack = newTrack;
@@ -92,6 +95,36 @@ public class StreamingSession {
         if (this.historyIndex != 0) {
             this.historyIndex++;
         }
+    }
+
+    public void initializeAdSettings(int adInterval) {
+        this.lastPlayedAdTime = 0;
+        this.adInterval = adInterval;
+        this.adCounter = 0;
+    }
+
+    public void incrementAdCounter() {
+        this.adCounter++;
+    }
+
+    public void updateLastPlayedAdTime() {
+        this.lastPlayedAdTime = currentTimeMilisSupplier().get();
+    }
+
+    @JsonIgnore
+    public boolean isAdCooldownPeriodPassed(long threshold) {
+        long currentTime = currentTimeMilisSupplier().get();
+        return (currentTime - lastPlayedAdTime) >= threshold;
+    }
+
+
+    @JsonIgnore
+    public boolean isAdIntervalReached() {
+        return this.adCounter >= this.adInterval;
+    }
+
+    public void resetAdCounter() {
+        this.adCounter = 0;
     }
 
     public void endSession() {

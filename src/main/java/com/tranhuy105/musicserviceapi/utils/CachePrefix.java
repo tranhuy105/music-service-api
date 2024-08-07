@@ -13,7 +13,9 @@ public enum CachePrefix {
     TRACK("track:"),
     STREAMING_SESSION("session:"),
     STREAMING_HISTORY("session:history:"),
-    SESSION_LOCK("lock:session:");
+    SESSION_LOCK("lock:session:"),
+    SAVED_TRACK("track:saved:"),
+    FOLLOWED_ARTIST("artist:followed:");
 
     private final String prefix;
 

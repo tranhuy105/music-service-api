@@ -52,7 +52,7 @@ public class TrackService {
         File file = convertMultipartFileToFile(multipartFile);
         dto.setDuration(extractTrackDuration(file));
         Long trackId = trackRepository.insert(dto);
-        storageService.uploadTrack(file, trackId.toString());
+        storageService.uploadMediaItem(file, trackId.toString(), "track");
     }
 
     public int extractTrackDuration(File file) {

@@ -8,8 +8,18 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 public class PlaylistTrackRowMapper implements RowMapper<PlaylistTrack> {
+    private final boolean isSavedPlaylist;
+
+    public PlaylistTrackRowMapper(boolean isSavedPlaylist) {
+        this.isSavedPlaylist = isSavedPlaylist;
+    }
+
+    public PlaylistTrackRowMapper() {
+        this.isSavedPlaylist = false;
+    }
 
     @Override
     public PlaylistTrack mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -17,11 +27,11 @@ public class PlaylistTrackRowMapper implements RowMapper<PlaylistTrack> {
 
         PlaylistTrack playlistTrack = new PlaylistTrack();
         playlistTrack.setTrack(track);
-        playlistTrack.setPosition(rs.getInt("position"));
+        playlistTrack.setPosition(isSavedPlaylist ? rowNum + 1 : rs.getInt("position"));
         playlistTrack.setAddedBy(rs.getLong("added_by"));
 
-        Date addedAt = rs.getDate("added_at");
-        playlistTrack.setAddedAt(addedAt != null ? addedAt.toLocalDate() : null);
+        Timestamp addedAt = rs.getTimestamp("added_at");
+        playlistTrack.setAddedAt(addedAt != null ? addedAt.toLocalDateTime() : null);
 
         return playlistTrack;
     }
