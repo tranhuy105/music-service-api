@@ -21,7 +21,7 @@ public class StreamingSession {
 
     private Long userId;
     private boolean isPlaying; // Indicates if the session is currently playing pr pausing
-    private TrackDetail currentTrack; // Current track being played
+    private MediaItem currentMedia; // Current track being played
 
     private StreamingSource streamingSource;
     private PlaybackMode playbackMode = PlaybackMode.SHUFFLE;
@@ -41,7 +41,7 @@ public class StreamingSession {
     public StreamingSession(User user, String deviceId, StreamingSource streamingSource, PlaybackMode playbackMode) {
         this.userId = user.getId();
         this.isPlaying = false;
-        this.currentTrack = null;
+        this.currentMedia = null;
         this.streamingSource = streamingSource;
         if (playbackMode != null) {
             this.playbackMode = playbackMode;
@@ -64,18 +64,30 @@ public class StreamingSession {
     }
 
     public StreamingHistory playTrack(TrackDetail newTrack) {
-        TrackDetail prevTrack = this.currentTrack;
-        if (prevTrack != null && Objects.equals(newTrack.getId(), prevTrack.getId())) {
+        if (this.currentMedia instanceof Advertisement) {
+            this.currentMedia = newTrack;
+            this.accumulatedTime = 0;
+            this.lastRecordedTime = currentTimeMilisSupplier().get();
             return null;
         }
-        this.currentTrack = newTrack;
+
+        TrackDetail prevItem = (TrackDetail) this.currentMedia;
+        if (prevItem == null) {
+            return null;
+        }
+
+        if (Objects.equals(newTrack.getId(), prevItem.getItemId())) {
+            return null;
+        }
+
+        this.currentMedia = newTrack;
         if (this.isPlaying) {
             updateTrackTime();
         }
 
         long accumulatedTime = this.accumulatedTime;
         this.accumulatedTime = 0;
-        return prevTrack != null ? StreamingHistory.of(prevTrack, accumulatedTime) : null;
+        return StreamingHistory.of(prevItem, accumulatedTime);
     }
 
     public void validateDevice(String deviceId) {

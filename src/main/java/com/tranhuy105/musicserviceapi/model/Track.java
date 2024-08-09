@@ -20,4 +20,9 @@ public class Track extends MediaItem {
     public String getURI() {
         return String.format("spotify:track:%d", id);
     }
+
+    @Override
+    public Long getItemId() {
+        return this.id;
+    }
 }

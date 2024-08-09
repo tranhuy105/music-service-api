@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,6 +32,9 @@ public class SubscriptionDao implements SubscriptionRepository {
     private static final String FIND_ALL_SUBSCRIPTION_PLANS_SQL =
             "SELECT * FROM subscription_plans";
 
+    private static final String FIND_SUBSCRIPTION_PLAN_BY_ID_SQL =
+            "SELECT * FROM subscription_plans WHERE id = ?";
+
     @Override
     public List<UserSubscription> findUserSubscriptions(@NonNull Long userId) {
         return jdbcTemplate.query(FIND_USER_SUBSCRIPTIONS_SQL, new UserSubscriptionRowMapper(), userId);
@@ -38,8 +42,12 @@ public class SubscriptionDao implements SubscriptionRepository {
 
     @Override
     public List<SubscriptionPlan> findAllSubscriptionPlan() {
-
         return jdbcTemplate.query(FIND_ALL_SUBSCRIPTION_PLANS_SQL, new SubscriptionPlanRowMapper());
+    }
+
+    @Override
+    public Optional<SubscriptionPlan> findPlanById(Short planId) {
+        return jdbcTemplate.query(FIND_SUBSCRIPTION_PLAN_BY_ID_SQL, new SubscriptionPlanRowMapper(), planId).stream().findFirst();
     }
 
     @Override

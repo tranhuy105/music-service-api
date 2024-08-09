@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -12,10 +14,20 @@ import lombok.Setter;
 public class Advertisement extends MediaItem {
     private Long id;
     private String title;
-    private String coverUrl;
+    private String description;
+    private String imageUrl;
+    private String targetUrl;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private String regionCode;
 
     @Override
     public String getURI() {
         return String.format("spotify:ad:%d", id);
+    }
+
+    @Override
+    public Long getItemId() {
+        return this.id;
     }
 }
