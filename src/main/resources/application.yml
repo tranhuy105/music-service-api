@@ -47,6 +47,16 @@ cdn:
     keyPairId: my-cloudfront-key-pair-id
     privateKeyPath: path/to/my/private-key.pem
 
+payment:
+  vnPay:
+    url: ${PAY_URL}
+    returnUrl: ${RETURN_URL}
+    tmnCode: ${TMN_CODE}
+    secretKey: ${SECRET}
+    version: ${VERSION}
+    command: ${COMMAND}
+    orderType: ${ORDER_TYPE}
+
 
 
 logging:

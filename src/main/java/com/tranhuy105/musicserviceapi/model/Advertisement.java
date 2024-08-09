@@ -19,8 +19,6 @@ public class Advertisement extends MediaItem {
     private String targetUrl;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     private String regionCode;
 
     @Override

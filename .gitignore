@@ -6,6 +6,7 @@ target/
 data/
 inits3.bat
 mc.exe
+.env
 
 ### STS ###
 .apt_generated
