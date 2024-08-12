@@ -2,9 +2,9 @@
 
 ## Overview
 
-This project provides a comprehensive music streaming service API with robust functionalities, including CRUD operations, advanced query options, and Redis caching for performance optimization. The core focuses are user management, track playback, playlist creation, payment processing, and session management. Special attention is given to implementing a caching layer using Redis to ensure a smooth and efficient streaming experience.
+This project provides a REST API similar to Spotify, letting you manage and stream music with advanced search options and fast performance using Redis caching
 
-For database operations, JDBC is used for its simplicity and efficiency in handling native SQL queries. JPA (Java Persistence API) is avoided due to a personal preference for the direct control and flexibility that JDBC offers.
+JDBC is used for database operations due to its straightforwardness and effectiveness in managing native SQL queries, especially when complex joins make JPA a bit frustrating (personal opinion).
 
 ## Technologies Used
 
