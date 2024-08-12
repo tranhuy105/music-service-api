@@ -21,7 +21,7 @@ public class UserService {
         return convertToDto(user);
     }
 
-    private UserDto convertToDto(User user) {
+    public static UserDto convertToDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
                 .firstname(user.getFirstname())

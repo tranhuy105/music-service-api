@@ -15,7 +15,7 @@ CREATE TABLE advertisements (
     end_date TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    region_code CHAR(2) UNIQUE NOT NULL,
+    region_code CHAR(2) NOT NULL,
     FOREIGN KEY (region_code) REFERENCES regions(code)
 );
 
@@ -79,8 +79,8 @@ INSERT INTO regions (code, name) VALUES
 ('IE', 'Ireland');
 
 INSERT INTO advertisements (title, description, image_url, target_url, start_date, end_date, region_code) VALUES
-('Summer Music Festival 2024', 'Join us for an unforgettable summer music festival with top artists from around the world. Tickets are selling fast!', 'https://example.com/summer-music-festival.jpg', 'https://example.com/summer-music-festival', NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 'US'),
+('Summer Music Festival 2024', 'Join us for an unforgettable summer music festival with top artists from around the world. Tickets are selling fast!', 'https://example.com/summer-music-festival.jpg', 'https://example.com/summer-music-festival', NOW(), DATE_ADD(NOW(), INTERVAL 3 MONTH), 'VN'),
 ('Sơn Tùng M-TP: New Album Release', 'Discover the latest album from Sơn Tùng M-TP. Stream now and enjoy exclusive tracks from Vietnam’s top artist!', 'https://example.com/son-tung-mtp-new-album.jpg', 'https://example.com/son-tung-mtp-new-album', NOW(), DATE_ADD(NOW(), INTERVAL 6 MONTH), 'VN'),
-('50% Off on All Music Merch', 'Get 50% off on all music merchandise. Limited time offer!', 'https://example.com/music-merch.jpg', 'https://example.com/music-merch', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 'CA'),
+('50% Off on All Music Merch', 'Get 50% off on all music merchandise. Limited time offer!', 'https://example.com/music-merch.jpg', 'https://example.com/music-merch', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 'VN'),
 ('Exclusive Concert Streaming', 'Watch exclusive live concert streams from top artists. Available only in your region!', 'https://example.com/concert-streaming.jpg', 'https://example.com/concert-streaming', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 'JP'),
-('Holiday Playlist Specials', 'Create the perfect holiday playlist with our specially curated tracks. Available now!', 'https://example.com/holiday-playlist.jpg', 'https://example.com/holiday-playlist', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 'AU');
+('Holiday Playlist Specials', 'Create the perfect holiday playlist with our specially curated tracks. Available now!', 'https://example.com/holiday-playlist.jpg', 'https://example.com/holiday-playlist', NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH),  'VN');

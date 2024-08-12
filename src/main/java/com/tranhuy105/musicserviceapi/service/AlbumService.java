@@ -137,6 +137,7 @@ public class AlbumService {
                     trackDetail.setId(track.getId());
                     trackDetail.setTitle(track.getTitle());
                     trackDetail.setDuration(track.getDuration());
+                    trackDetail.setStreamCount(track.getStreamCount());
 
                     TrackAlbum trackAlbum = buildTrackAlbum(albumDetail);
                     trackDetail.setAlbum(trackAlbum);

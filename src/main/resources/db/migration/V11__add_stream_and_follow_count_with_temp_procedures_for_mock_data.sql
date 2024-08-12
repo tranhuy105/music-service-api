@@ -133,6 +133,8 @@ BEGIN
             SET i = i + 1;
         END WHILE;
 
+    SET i = 0;
+
     -- Process tracks
     SET len = JSON_LENGTH(p_tracks);
     WHILE i < len DO
@@ -156,14 +158,14 @@ CALL InsertArtistData(
         @secure_password,
         'ヨルシカ',
         'ヨルシカ is a Japanese music project by composer and vocalist suis and guitarist and producer, n-buna.',
-        'http://example.com/yorushika-profile.jpg',
+        'https://i.scdn.co/image/ab67706f00000002dacf01b5a4e66753c58bc968',
     @artist_id);
 
 CALL CreateAlbumWithArtistsAndTracks(
         'だから僕は音楽を辞めた',
         '2018-11-07',
         FALSE,
-        'https://example.com/album1-cover.jpg',
+        'https://i.scdn.co/image/ab67616d0000b273b1b3b83ffee5925197e7ef2c',
         CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}]'),
         '[{"title": "だから僕は音楽を辞めた", "duration": 234000}, {"title": "言って。", "duration": 243000}, {"title": "花瓶に触れた", "duration": 242000}, {"title": "おかえり", "duration": 256000}, {"title": "藍", "duration": 245000}, {"title": "ノスタルジア", "duration": 248000}, {"title": "雲雀", "duration": 256000}, {"title": "雨とカプチーノ", "duration": 250000}]'
     );
@@ -171,7 +173,7 @@ CALL CreateAlbumWithArtistsAndTracks(
         '月光',
         '2019-07-03',
         FALSE,
-        'https://example.com/album2-cover.jpg',
+        'https://i.scdn.co/image/ab67616d00001e0295cc75c19afec42991bf8c1a',
         CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}]'),
         '[{"title": "月光", "duration": 252000}, {"title": "心の底から", "duration": 236000}, {"title": "声", "duration": 223000}, {"title": "セツナ", "duration": 262000}, {"title": "セプテンバー", "duration": 251000}, {"title": "会いたい", "duration": 234000}, {"title": "新しい世界", "duration": 246000}, {"title": "青", "duration": 241000}]'
     );
@@ -179,7 +181,7 @@ CALL CreateAlbumWithArtistsAndTracks(
         'エルマ',
         '2021-07-21',
         FALSE,
-        'https://example.com/album3-cover.jpg',
+        'https://i.scdn.co/image/ab67616d0000b2730fc9f40ffa270f17b66bcdac',
         CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}]'),
         '[{"title": "エルマ", "duration": 235000}, {"title": "ララバイ", "duration": 245000}, {"title": "空に", "duration": 241000}, {"title": "道", "duration": 250000}, {"title": "出会い", "duration": 242000}, {"title": "さよなら", "duration": 243000}, {"title": "夢", "duration": 255000}, {"title": "君と僕", "duration": 238000}]'
     );
@@ -191,7 +193,7 @@ CALL InsertArtistData(
     @secure_password,
     'Snoop Dogg',
     'Snoop Dogg is an American rapper, singer, and actor known for his impact on hip-hop and popular music.',
-    'http://example.com/snoopdogg-profile.jpg',
+    'https://i.scdn.co/image/ab6761610000e5eb9a398209a4ef3360dce2dec4',
     @snoop_artist_id
 );
 
@@ -222,7 +224,7 @@ CALL InsertArtistData(
     @secure_password,
     'Sơn Tùng M-TP',
     'Sơn Tùng M-TP is a popular Vietnamese singer and songwriter known for his unique blend of pop, R&B, and Vietnamese music.',
-    'http://example.com/sontungmtp-profile.jpg',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTyikRx2-k7L8ipGlZptEa_hgl213YriWlWlQ&s',
     @artist_id
 );
 
@@ -231,7 +233,7 @@ CALL CreateAlbumWithArtistsAndTracks(
     'MT-P',
     '2022-08-10',
     FALSE,
-    'https://example.com/album4-cover.jpg',
+    'https://i.scdn.co/image/ab67616d0000b273af31997b23b7e6e65de1816b',
     CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}]'),
     '[{"title": "MT-P", "duration": 275000}, {"title": "Em của ngày hôm qua", "duration": 250000}, {"title": "Âm Thầm Bên Em", "duration": 240000}, {"title": "Nắng ấm xa dần", "duration": 210000}, {"title": "Chúng Ta Không Thuộc Về Nhau", "duration": 320000}]'
 );
@@ -241,7 +243,7 @@ CALL CreateAlbumWithArtistsAndTracks(
     'Hãy Trao Cho Anh (feat. Snoop Dogg)',
     '2019-07-01',
     TRUE,
-    'https://example.com/single1-cover.jpg',
+    'https://i.scdn.co/image/ab67616d0000b2730ac09baba508700ed0b5d4e3',
     CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}, {"artistId": ', @snoop_artist_id, ', "role": "support"}]'),
     '[{"title": "Hãy Trao Cho Anh", "duration": 275000}]'
 );
@@ -251,7 +253,7 @@ CALL CreateAlbumWithArtistsAndTracks(
     'Chạy Ngay Đi',
     '2018-03-01',
     TRUE,
-    'https://example.com/single2-cover.jpg',
+    'https://i.scdn.co/image/ab67616d0000b273eda65b93d53c2f982c5d57d8',
     CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}]'),
     '[{"title": "Chạy Ngay Đi", "duration": 210000}]'
 );
@@ -261,7 +263,7 @@ CALL CreateAlbumWithArtistsAndTracks(
     'Lạc Trôi',
     '2017-01-06',
     TRUE,
-    'https://example.com/single3-cover.jpg',
+    'https://i.scdn.co/image/ab67616d0000b273eda65b93d53c2f982c5d57d8',
     CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}]'),
     '[{"title": "Lạc Trôi", "duration": 250000}]'
 );
@@ -271,7 +273,7 @@ CALL CreateAlbumWithArtistsAndTracks(
     'Âm Thầm Bên Em',
     '2015-09-24',
     TRUE,
-    'https://example.com/single4-cover.jpg',
+    'https://i.scdn.co/image/ab67616d00001e023ae0686450d88b90705c5919',
     CONCAT('[{"artistId": ', @artist_id, ', "role": "main"}]'),
     '[{"title": "Âm Thầm Bên Em", "duration": 240000}]'
 );
@@ -1006,7 +1008,7 @@ CALL InsertArtistData(
     @secure_password,
     '星街すいせい',
     '星街すいせいは、日本のVTuberであり、歌手としても知られています。彼女の音楽は、アニメやポップカルチャーの影響を受けた明るくキャッチーなものです。',
-    'http://example.com/suisei-profile.jpg',
+    'https://i.scdn.co/image/ab6761610000e5eb76a27aabf8195229f5673f05',
     @suisei_id
 );
 
@@ -1015,63 +1017,34 @@ CALL CreateAlbumWithArtistsAndTracks(
     'Stellar Stellar',
     '2021-01-06',
     FALSE,
-    'https://example.com/stellar-stellar-cover.jpg',
+    'https://i.scdn.co/image/ab67616d0000b273f724e5bdf4ae3e50082c2403',
     CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
     '[{"title": "Stellar Stellar", "duration": 241000}, {"title": "Next Color Planet", "duration": 220000}, {"title": "キミと僕のメリークリスマス", "duration": 258000}, {"title": "Genius", "duration": 235000}, {"title": "ぼっち", "duration": 254000}]'
 );
 
 CALL CreateAlbumWithArtistsAndTracks(
-    'IDOL',
+    'Specter',
     '2020-09-09',
     FALSE,
-    'https://example.com/idol-cover.jpg',
+    'https://i.scdn.co/image/ab67616d0000b273194d7025ba5e17eeadd3a10f',
     CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
     '[{"title": "IDOL", "duration": 234000}, {"title": "シンクロニシティ", "duration": 246000}, {"title": "Sweet Devil", "duration": 211000}, {"title": "天球", "duration": 263000}, {"title": "10%", "duration": 242000}]'
 );
 
 CALL CreateAlbumWithArtistsAndTracks(
-    'LOST EDEN',
-    '2022-01-12',
-    FALSE,
-    'https://example.com/lost-eden-cover.jpg',
-    CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
-    '[{"title": "LOST EDEN", "duration": 250000}, {"title": "Cosmos", "duration": 229000}, {"title": "Brave", "duration": 212000}, {"title": "Aurora", "duration": 245000}, {"title": "Shining", "duration": 258000}]'
-);
-
-CALL CreateAlbumWithArtistsAndTracks(
-    'Non-Fiction',
-    '2021-09-01',
-    FALSE,
-    'https://example.com/non-fiction-cover.jpg',
-    CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
-    '[{"title": "Non-Fiction", "duration": 245000}, {"title": "フルパワー", "duration": 233000}, {"title": "日常", "duration": 222000}, {"title": "ブレイカー", "duration": 244000}, {"title": "Diva", "duration": 257000}]'
-);
-
--- Single: "Last Song"
-CALL CreateAlbumWithArtistsAndTracks(
-    'Last Song',
-    '2022-06-15',
-    TRUE,
-    'https://example.com/last-song-cover.jpg',
-    CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
-    '[{"title": "Last Song", "duration": 270000}]'
-);
-
--- Single: "Go! Go! Go!"
-CALL CreateAlbumWithArtistsAndTracks(
-    'Go! Go! Go!',
-    '2023-03-12',
-    TRUE,
-    'https://example.com/go-go-go-cover.jpg',
-    CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
-    '[{"title": "Go! Go! Go!", "duration": 230000}]'
-);
+        'Bluerose / comet',
+        '2021-03-21',
+        FALSE,
+        'https://i.scdn.co/image/ab67616d0000b2734800ec7c7f3128fd313c7ea1',
+        CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
+        '[{"title": "Bluerose", "duration": 245000}, {"title": "comet", "duration": 235000}]'
+    );
 
 CALL CreateAlbumWithArtistsAndTracks(
     'デデビダ',
     '2024-03-21',
     TRUE,
-    'https://example.com/dedebida-cover.jpg',
+    'https://i.scdn.co/image/ab67616d00001e02f74ff9ad8ca4e0a1d5044418',
     CONCAT('[{"artistId": ', @suisei_id, ', "role": "main"}]'),
     '[{"title": "デデビダ", "duration": 245000}]'
 );
@@ -1495,6 +1468,58 @@ CALL CreateAlbumWithArtistsAndTracks(
     '[{"title": "Skin Deep", "duration": 255000}, {"title": "Every Time I Roll the Dice", "duration": 255000}, {"title": "Too Many Tears", "duration": 252000}, {"title": "Pride and Joy", "duration": 262000}, {"title": "Key to the Highway", "duration": 265000}]'
 );
 
+CALL CreateAlbumWithArtistsAndTracks(
+    'ガールズブルー・ハッピーサッド',
+    '2019-03-13',
+    FALSE,
+    'https://i.scdn.co/image/ab67616d0000b273cbfc898159e1321b03167f84',
+    CONCAT('[{"artistId": ', 2, ', "role": "main"}]'),
+    '[{"title": "ピンクレモネード", "duration": 276000},
+      {"title": "三月がずっと続けばいい", "duration": 300000},
+      {"title": "風の声を聴きながら", "duration": 250000},
+      {"title": "青春なんていらないわ", "duration": 290000},
+      {"title": "街路、ライトの灯りだけ", "duration": 295000}]'
+);
+
+INSERT INTO playlists (id, user_id, name, description, public, cover_url) VALUES
+(7, 1, 'Ronaldo Goat SIUUUUUUUUUU', 'CR7 GOAT', TRUE, 'https://pbs.twimg.com/media/GNb5ZoGWwAAc7M7?format=jpg&name=large');
+
+CALL InsertPlaylistTrackAtEnd(7, 523,1);
+CALL InsertPlaylistTrackAtEnd(7, 524,1);
+CALL InsertPlaylistTrackAtEnd(7, 525,1);
+CALL InsertPlaylistTrackAtEnd(7, 526,1);
+CALL InsertPlaylistTrackAtEnd(7, 7, 1);
+CALL InsertPlaylistTrackAtEnd(7, 527,1);
+
+CALL InsertArtistData(
+    'maisondes@example.com',
+    @secure_password,
+    'MAISONdes',
+    '',
+    'https://i.scdn.co/image/ab6761610000e5eb4cff40e8e78eb88bb67fb9e1',
+    @maisonDes
+);
+
+CALL CreateAlbumWithArtistsAndTracks(
+    '夏風に溶ける',
+    '2021-09-08',
+    TRUE,
+    'https://i.scdn.co/image/ab67616d0000b27371fc6cbb96d1032d5a5a2fc0',
+    CONCAT('[{"artistId": ', @maisonDes, ', "role": "main"}]'),
+    '[{"title": "夏風に溶ける", "duration": 276000}]'
+);
+
+CALL CreateAlbumWithArtistsAndTracks(
+    'アリバイゲーム',
+    '2024-07-26',
+    TRUE,
+    'https://i.scdn.co/image/ab67616d0000b27323c49d6b282927e849d4e649',
+    CONCAT('[{"artistId": ', @maisonDes, ', "role": "main"}]'),
+    '[{"title": "アリバイゲーム", "duration": 236000}]'
+);
+
+CALL InsertPlaylistTrackAtEnd(7, 528,1);
+CALL InsertPlaylistTrackAtEnd(7, 529,1);
 
 -- clean up
 DROP PROCEDURE InsertArtistData;

@@ -10,10 +10,12 @@ import com.tranhuy105.musicserviceapi.repository.api.UserInteractionRepository;
 import com.tranhuy105.musicserviceapi.utils.QueryUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -46,6 +48,30 @@ public class UserInteractionDao implements UserInteractionRepository {
         Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, userId, trackId);
         return exists != null && exists;
     }
+
+    @Override
+    public Map<Long, Boolean> findSavedTrackIds(Long userId, List<Long> trackIds) {
+        String sql = "SELECT track_id FROM likes WHERE user_id = ? AND track_id IN (" +
+                trackIds.stream().map(id -> "?").collect(Collectors.joining(",")) +
+                ")";
+        Object[] params = new Object[trackIds.size() + 1];
+        params[0] = userId;
+        for (int i = 0; i < trackIds.size(); i++) {
+            params[i + 1] = trackIds.get(i);
+        }
+
+        RowMapper<Long> rowMapper = (rs, rowNum) -> rs.getLong("track_id");
+        List<Long> savedTrackIds = jdbcTemplate.query(sql, params, rowMapper);
+
+        savedTrackIds.forEach(System.out::println);
+
+        return trackIds.stream()
+                .collect(Collectors.toMap(
+                        trackId -> trackId,
+                        trackId -> savedTrackIds.contains(trackId)
+                ));
+    }
+
 
     @Override
     public Page<Artist> findFollowingArtistById(Long userId, QueryOptions queryOptions) {

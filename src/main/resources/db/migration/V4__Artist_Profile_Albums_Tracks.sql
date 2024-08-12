@@ -89,25 +89,24 @@ LEFT JOIN tracks t ON a.id = t.album_id;
 -- Insert initial data
 INSERT INTO artist_profiles (user_id, stage_name, bio, profile_picture_url)
 VALUES
-(1, '結束バンド', 'A fictional band from the anime Bocchi the Rock!', 'https://example.com/profile.jpg'),
-(2, 'Sangatsu No Phantasia', null, 'https://example.com/profile.jpg'),
+(1, '結束バンド', 'A fictional band from the anime Bocchi the Rock!', 'https://i.scdn.co/image/ab6761610000e5eb86de41539f26da7d0626e257'),
+(2, 'Sangatsu No Phantasia', null, 'https://i.scdn.co/image/ab6761610000e5eb810a96f25d7658ce376dec6f'),
 (3, 'Yoshino Nanjo', 'Japanese singer and actress known for her work in various anime.', 'https://example.com/yoshino_nanjo.jpg'),
 (4, 'KanoeRana', 'Vocalist with a unique voice and style, contributing to several anime soundtracks.', 'https://example.com/kanoerana.jpg');
 
 INSERT INTO albums (id, title, release_date, cover_url, is_single)
 VALUES
-(1, '結束バンド', '2022-12-28', 'https://example.com/album_cover.jpg', false),
-(2, '忘れてやらない', '2022-12-21', 'https://example.com/wasurete_yaranai_cover.jpg', true),
-(3, 'Pastel Rain', '2022-6-30', null, true),
+(1, '結束バンド', '2022-12-28', 'https://i.scdn.co/image/ab67616d00001e0209ca036917527fa198ead7b1', false),
+(2, '忘れてやらない', '2022-12-21', 'https://i.scdn.co/image/ab67616d00001e0209ca036917527fa198ead7b1', true),
+(3, 'Pastel Rain', '2022-6-30', 'https://i.scdn.co/image/ab67616d0000b273cbfc898159e1321b03167f84', true),
 (4, 'Misty Night', '2023-05-15', 'https://example.com/misty_night_cover.jpg', false),
 (5, 'Eternal Harmony', '2023-01-30', 'https://example.com/eternal_harmony_cover.jpg', false);
 
 INSERT INTO album_artists (album_id, artist_id, role)
 VALUES
 (1, 1, 'main'),
-(2, 2, 'support'),
 (2, 1, 'main'),
-(3, 1, 'main'),
+(3, 2, 'main'),
 (4, 3, 'main'),
 (4, 4, 'support'),
 (5, 3, 'main'),
@@ -116,10 +115,10 @@ VALUES
 INSERT INTO tracks (album_id, title, duration)
 VALUES
 (1, 'Seishun Complex', 232000),
-(1, 'Distortion!!', 208000),
+(1, 'Into the light', 208000),
 (1, 'Guitar, Loneliness and Blue Planet', 212000),
 (1, 'Ano Band', 238000),
-(3, 'Secret Base', 283000),
+(4, 'Secret Base', 283000),
 (2, 'Wasurete Yaranai', 223000),
 (3, 'Pastel Rain', 230000),
 (4, 'Twilight Breeze', 245000),
