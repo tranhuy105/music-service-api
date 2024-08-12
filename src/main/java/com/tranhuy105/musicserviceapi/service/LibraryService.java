@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -56,9 +59,13 @@ public class LibraryService {
         evictLibraryCache(CachePrefix.SAVED_TRACK, userId);
     }
 
-    public boolean isTrackSaved(Authentication authentication, Long trackId) {
+    public List<Boolean> areTracksSaved(Authentication authentication, List<Long> trackIds) {
         Long userId = getUser(authentication).getId();
-        return userInteractionRepository.isTrackSaved(userId, trackId);
+        Map<Long, Boolean> savedTrackMap = userInteractionRepository.findSavedTrackIds(userId, trackIds);
+
+        return trackIds.stream()
+                .map(trackId -> savedTrackMap.getOrDefault(trackId, false))
+                .toList();
     }
 
     public void followArtist(Authentication authentication, Long artistProfileId) {
@@ -73,9 +80,12 @@ public class LibraryService {
         evictLibraryCache(CachePrefix.FOLLOWED_ARTIST, userId);
     }
 
-    public boolean isFollowingArtist(Authentication authentication, Long artistId) {
+    public List<Boolean> areFollowingArtist(Authentication authentication, List<Long> artistIds) {
         Long userId = getUser(authentication).getId();
-        return userInteractionRepository.isFollowingArtist(userId, artistId);
+        Map<Long, Boolean> followingArtistsIds = userInteractionRepository.findFollowingArtistIds(userId, artistIds);
+        return artistIds.stream()
+                .map(artistId -> followingArtistsIds.getOrDefault(artistId,false))
+                .toList();
     }
 
     private void evictLibraryCache(CachePrefix cachePrefix, Object... part) {

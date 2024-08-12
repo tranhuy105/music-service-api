@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/me")
 @RequiredArgsConstructor
@@ -34,8 +36,9 @@ public class LibraryController {
     }
 
     @GetMapping("/following/contains")
-    public ResponseEntity<Boolean> checkIfUserFollow(Authentication authentication, @RequestParam("artist_id") Long artistId){
-        return ResponseEntity.ok().body(libraryService.isFollowingArtist(authentication, artistId));
+    public ResponseEntity<List<Boolean>> checkIfUserFollow(Authentication authentication,
+                                                           @RequestParam("artist_ids") List<Long> artistId){
+        return ResponseEntity.ok().body(libraryService.areFollowingArtist(authentication, artistId));
     }
 
     @GetMapping("/tracks")
@@ -57,7 +60,8 @@ public class LibraryController {
     }
 
     @GetMapping("/tracks/contains")
-    public ResponseEntity<Boolean> checkIfUserSaved(Authentication authentication, @RequestParam("track_id") Long trackId){
-        return ResponseEntity.ok().body(libraryService.isTrackSaved(authentication, trackId));
+    public ResponseEntity<List<Boolean>> checkIfUserSavedMultiple(Authentication authentication,
+                                                                  @RequestParam("track_ids") List<Long> trackIds) {
+        return ResponseEntity.ok().body(libraryService.areTracksSaved(authentication, trackIds));
     }
 }

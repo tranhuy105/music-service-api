@@ -35,8 +35,9 @@ public class UserController {
 
     @GetMapping("/test/{id}")
     public ResponseEntity<?> testparam(@PathVariable Long id,
+                                       @RequestParam(value = "type") String type,
                                        @RequestParam(value = "file", required = false)MultipartFile file) throws IOException {
-        s3Service.uploadMediaItem(convertMultipartFileToFile(file), String.valueOf(id), "track");
+        s3Service.uploadMediaItem(convertMultipartFileToFile(file), String.valueOf(id), type);
         return ResponseEntity.ok(
                "ok"
         );

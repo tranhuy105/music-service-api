@@ -73,6 +73,7 @@ public class StreamingSession {
 
         TrackDetail prevItem = (TrackDetail) this.currentMedia;
         if (prevItem == null) {
+            this.currentMedia = newTrack;
             return null;
         }
 

@@ -30,4 +30,9 @@ public class AuthenticationController {
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
+
+    @PostMapping("/validate-token")
+    public ResponseEntity<String> validateToken() {
+        return ResponseEntity.ok().body("OK");
+    }
 }
