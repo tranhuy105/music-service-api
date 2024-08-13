@@ -14,6 +14,7 @@ public interface AlbumRepository {
     Optional<AlbumDetail> findAlbumDetailById(Long albumId);
     List<Album> findAllAlbum();
     Page<Album> findAllAlbum(QueryOptions queryOptions);
+    List<Album> findRelatedAlbum(Long id, int limit);
 
     void insert(CreateAlbumRequestDto dto);
 

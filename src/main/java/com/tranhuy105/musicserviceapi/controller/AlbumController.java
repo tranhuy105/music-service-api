@@ -34,6 +34,12 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.findAlbumById(id));
     }
 
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<Album>> findRelatedAlbumById(@PathVariable Long id,
+                                                         @RequestParam(value = "limit", required = false) Integer limit) {
+        return ResponseEntity.ok(albumService.findRelatedAlbum(id, limit));
+    }
+
     @GetMapping("/{id}/tracks")
     public ResponseEntity<List<TrackDetail>> findAlbumTracks(@PathVariable Long id) {
         return ResponseEntity.ok(albumService.findAlbumTracks(id));

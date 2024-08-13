@@ -65,6 +65,11 @@ public class AlbumService {
         albumRepository.insert(dto);
     }
 
+    public List<Album> findRelatedAlbum(Long id, Integer limit) {
+        int limitSafe = limit == null ? 20 : limit;
+        return albumRepository.findRelatedAlbum(id, limitSafe);
+    }
+
     public void addAlbumArtist(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
         artistValidator(dto, authentication);
         albumRepository.linkNewArtist(dto);

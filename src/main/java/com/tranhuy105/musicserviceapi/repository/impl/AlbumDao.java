@@ -45,6 +45,20 @@ public class AlbumDao implements AlbumRepository {
         return queryUtil.executeQueryWithOptions(baseQuery, queryOptions, new AlbumRowMapper());
     }
 
+    @Override
+    public List<Album> findRelatedAlbum(Long id, int limit) {
+        String sql = "SELECT DISTINCT a.* " +
+                "FROM albums a " +
+                "JOIN album_artists aa ON a.id = aa.album_id " +
+                "WHERE aa.artist_id IN (" +
+                "SELECT artist_id " +
+                "FROM album_artists " +
+                "WHERE album_id = ?" +
+                ") " +
+                "AND a.id != ? LIMIT ?";
+        return jdbcTemplate.query(sql, new AlbumRowMapper(), id, id, limit);
+    }
+
     @Transactional
     @Override
     public void insert(CreateAlbumRequestDto dto) {
