@@ -3,6 +3,7 @@ package com.tranhuy105.musicserviceapi.controller;
 import com.tranhuy105.musicserviceapi.dto.UserDto;
 import com.tranhuy105.musicserviceapi.model.User;
 import com.tranhuy105.musicserviceapi.service.CacheService;
+import com.tranhuy105.musicserviceapi.service.RecommendService;
 import com.tranhuy105.musicserviceapi.service.S3Service;
 import com.tranhuy105.musicserviceapi.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class UserController {
     private final UserService userService;
     private final CacheService cacheService;
     private final S3Service s3Service;
+    private final RecommendService recommendService;
 
     @GetMapping
     public ResponseEntity<User> getAuthUserInfo(Authentication authentication) {
@@ -45,7 +47,8 @@ public class UserController {
 
     @GetMapping("/test")
     public ResponseEntity<?> test() {
-        cacheService.evictAllCache();
+//        cacheService.evictAllCache();
+        recommendService.computeAndSaveSimilarity();
         return ResponseEntity.ok(
                 "Evict All Cache"
         );

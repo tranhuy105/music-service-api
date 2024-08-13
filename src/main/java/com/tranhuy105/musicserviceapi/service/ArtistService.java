@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ArtistService {
@@ -35,6 +37,11 @@ public class ArtistService {
         return artistRepository.findAllArtist(
                 QueryOptions.of(page != null ? page : 1,SEARCH_PAGE_SIZE).search(searchQuery).build()
         );
+    }
+
+    public List<Artist> findRelatedArtist(Long id, Integer limit) {
+        int limitSafe = limit != null ? limit : 20;
+        return artistRepository.findRelatedArtist(id, limitSafe);
     }
 
     public ArtistProfile findArtistProfileById(Long id) {

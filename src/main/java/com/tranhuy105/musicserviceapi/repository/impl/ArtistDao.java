@@ -35,6 +35,19 @@ public class ArtistDao implements ArtistRepository {
     }
 
     @Override
+    public List<Artist> findRelatedArtist(Long id, int limit) {
+        String sql = "SELECT " +
+                    "ap.*, " +
+                    "s.similarity " +
+                "FROM artist_similarity s " +
+                "JOIN artist_profiles ap " +
+                    "ON (s.artist1 = ap.id AND s.artist2 = ?) " +
+                    "OR (s.artist2 = ap.id AND s.artist1 = ?) " +
+                "ORDER BY s.similarity DESC LIMIT ?;";
+        return jdbcTemplate.query(sql, new ArtistRowMapper(), id, id, limit);
+    }
+
+    @Override
     public Optional<ArtistProfile> findArtistProfileById(Long id) {
         String sql = "SELECT * FROM artist_details WHERE artist_id = ?";
         return jdbcTemplate.query(sql, new ArtistProfileRowMapper(), id).stream().findFirst();
