@@ -38,6 +38,11 @@ public class ArtistController {
         return ResponseEntity.ok(artistService.findRelatedArtist(id, limit));
     }
 
+    @GetMapping("/{id}/top-tracks")
+    public ResponseEntity<List<TrackDetail>> findTopTrackByArtistId(@PathVariable Long id) {
+        return ResponseEntity.ok(artistService.findTopTrack(id));
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MANAGER')")

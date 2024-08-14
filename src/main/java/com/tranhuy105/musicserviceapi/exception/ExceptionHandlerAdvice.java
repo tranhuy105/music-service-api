@@ -20,6 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -126,5 +127,11 @@ public class ExceptionHandlerAdvice {
     public ResponseEntity<ExceptionResponseDto> handleException(HandlerMethodValidationException ex) {
         return ResponseEntity.status(BAD_REQUEST).body(ExceptionResponseDto.builder()
                 .message("Validation fail, please check your request parameter again.").httpStatus(BAD_REQUEST).build());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ExceptionResponseDto> handleException(NoResourceFoundException ex) {
+        return ResponseEntity.status(BAD_REQUEST).body(ExceptionResponseDto.builder()
+                .message(ex.getMessage()).httpStatus(BAD_REQUEST).build());
     }
 }

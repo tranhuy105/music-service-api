@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -35,7 +36,7 @@ public class ArtistDao implements ArtistRepository {
     }
 
     @Override
-    public List<Artist> findRelatedArtist(Long id, int limit) {
+    public List<Artist> findRelatedArtist(Long id, int limit, double threshHold) {
         String sql = "SELECT " +
                     "ap.*, " +
                     "s.similarity " +
@@ -43,8 +44,19 @@ public class ArtistDao implements ArtistRepository {
                 "JOIN artist_profiles ap " +
                     "ON (s.artist1 = ap.id AND s.artist2 = ?) " +
                     "OR (s.artist2 = ap.id AND s.artist1 = ?) " +
+                "WHERE s.similarity > ? " +
                 "ORDER BY s.similarity DESC LIMIT ?;";
-        return jdbcTemplate.query(sql, new ArtistRowMapper(), id, id, limit);
+        return jdbcTemplate.query(sql, new ArtistRowMapper(), id, id, threshHold, limit);
+    }
+
+    @Override
+    public Page<Artist> findArtistProfileByGenre(Long genreId, QueryOptions queryOptions) {
+        String sql = "SELECT " +
+                "ap.* " +
+                "FROM artist_profiles ap " +
+                "JOIN artist_genres ag ON ap.id = ag.artist_id AND ag.genre_id = :genreId";
+        Map<String, Object> params = Map.of("genreId", genreId);
+        return queryUtil.executeQueryWithOptions(sql, queryOptions, new ArtistRowMapper(), params);
     }
 
     @Override

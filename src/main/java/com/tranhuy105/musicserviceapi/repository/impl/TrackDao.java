@@ -68,6 +68,52 @@ public class TrackDao implements TrackRepository {
     }
 
     @Override
+    public List<TrackDetail> findTopTrackByArtistId(Long artistId, int limit) {
+        String sql = """
+            SELECT
+                track_id,
+                track_title,
+                track_duration,
+                album_id,
+                album_title,
+                album_cover_url,
+                stream_count,
+                GROUP_CONCAT(artist_id) AS artist_ids,
+                GROUP_CONCAT(artist_stage_name) AS artist_stage_names,
+                GROUP_CONCAT(artist_profile_picture_url) AS artist_profile_pictures,
+                GROUP_CONCAT(role) AS roles
+            FROM (
+                SELECT
+                    t.id AS track_id,
+                    t.title AS track_title,
+                    t.duration AS track_duration,
+                    t.album_id,
+                    t.stream_count,
+                    a.title AS album_title,
+                    a.cover_url AS album_cover_url,
+                    aa.artist_id,
+                    ap.stage_name AS artist_stage_name,
+                    ap.profile_picture_url AS artist_profile_picture_url,
+                    aa.role
+                FROM tracks t
+                JOIN albums a ON t.album_id = a.id
+                JOIN album_artists aa ON a.id = aa.album_id
+                JOIN artist_profiles ap ON aa.artist_id = ap.id
+                WHERE artist_id = ?
+            ) AS filtered_tracks
+            GROUP BY
+                track_id,
+                track_title,
+                track_duration,
+                album_id,
+                album_title,
+                album_cover_url,
+                stream_count
+            ORDER BY stream_count DESC LIMIT ?""";
+        return jdbcTemplate.query(sql, new TrackDetailRowMapper(), artistId, limit);
+    }
+
+    @Override
     public Long insert(CreateTrackRequestDto dto) {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withProcedureName("createTrack");

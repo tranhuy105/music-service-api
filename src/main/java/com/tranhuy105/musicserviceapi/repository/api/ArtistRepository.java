@@ -12,7 +12,8 @@ import java.util.Optional;
 public interface ArtistRepository {
     List<Artist> findAllArtist();
     Page<Artist> findAllArtist(QueryOptions queryOptions);
-    List<Artist> findRelatedArtist(Long id, int limit);
+    List<Artist> findRelatedArtist(Long id, int limit, double threshHold);
+    Page<Artist> findArtistProfileByGenre(Long genreId, QueryOptions queryOptions);
 
     Optional<ArtistProfile> findArtistProfileById(Long id);
 

@@ -8,6 +8,7 @@ public enum CachePrefix {
     PLAYLIST("playlist:"),
     USER("user:"),
     ARTIST_PROFILE("artist:profile:"),
+    ARTIST_TOP_TRACKS("artist:tracks:"),
     ALBUM("album:"),
     ALBUM_TRACKS("album:tracks:"),
     TRACK("track:"),
@@ -15,7 +16,8 @@ public enum CachePrefix {
     STREAMING_HISTORY("session:history:"),
     SESSION_LOCK("lock:session:"),
     SAVED_TRACK("track:saved:"),
-    FOLLOWED_ARTIST("artist:followed:");
+    FOLLOWED_ARTIST("artist:followed:"),
+    GENRE("genre:");
 
     private final String prefix;
 
