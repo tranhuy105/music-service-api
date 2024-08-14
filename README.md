@@ -8,14 +8,14 @@ JDBC is used for database operations due to its straightforwardness and effectiv
 
 ## Technologies Used
 
-- **Java & Spring Boot:** Core technologies for building the RESTful API.
-- **Redis:** Utilized for caching frequently accessed data like playlists and track details, and for distributed locking to manage concurrent access to shared resources (e.g., streaming sessions).
-- **MySQL:** Database for storing persistent data, including user profiles, track metadata, and playlists.
-- **Flyway:** Database migration tool for managing schema version control, ensuring the database structure is up-to-date and consistent across environments.
-- **Docker:** Used for containerizing the application.
-- **Amazon S3:** Utilized for storing and serving music tracks, providing scalable and reliable storage for audio files.
-- **Amazon CloudFront:** CDN service used to deliver music tracks with low latency and high transfer speeds, enhancing the streaming experience by reducing buffering and improving load times.
-- **VNPay Sandbox:** Payment gateway used for processing transactions and managing user subscriptions, including a sandbox environment for testing payment integration.
+- **Java & Spring Boot:** Frameworks for building and managing the RESTful API.
+- **Redis:** Enhances performance with caching and supports distributed locking.
+- **MySQL:** Relational database for storing user data, track info, and playlists.
+- **Flyway:** Handles database schema migrations and version control.
+- **Docker:** Containerizing the application.
+- **Amazon S3:** Scalable storage for audio files.
+- **Amazon CloudFront:** Accelerates music delivery with low-latency CDN.
+- **VNPay Sandbox:** Manages and tests payment processing and subscriptions.
 
 ## Database Migration
 
