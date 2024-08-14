@@ -54,7 +54,7 @@ The `PlayerService` class manages streaming sessions for users, including:
 The `RedisService` class implements the `CacheService` interface:
 
 - **Caching:** Stores session data, track details, and other frequently accessed information in Redis with configurable expiration times to enhance performance (TLS).
-- **Distributed Locking:** Manages thread-safe operations across distributed service instances using Redisson’s locking mechanism.
+- **Distributed Locking:** Manages thread-safe operations when working with `StreamingSession` using Redisson’s locking mechanism.
 - **Cache Management:** Provides methods to evict specific or all caches, ensuring efficient removal of stale data.
 
 ### 3. **User Subscriptions and Payment Processing**
