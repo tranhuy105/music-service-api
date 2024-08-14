@@ -73,8 +73,7 @@ The service differentiates between premium and non-premium users, impacting thei
     - **Playback Experience:** May have advertisements inserted to support the free-tier service.
 
     
-- **Subscription Management:** Oversees the entire lifecycle of user subscriptions, including creation, renewal, and updates to subscription plans. This ensures users receive the appropriate features based on their subscription status.
-
+Subscription Management: Handles everything related to user subscriptions, like setting them up, renewing them, and changing plans. This makes sure users get the features they’re supposed to based on their subscription.
 
 - **Payment Processing:** Utilizes VNPay for secure payment transactions related to subscription services. This encompasses:
     - **Payment Requests:** Generating secure URLs for transactions and managing payment requests.
