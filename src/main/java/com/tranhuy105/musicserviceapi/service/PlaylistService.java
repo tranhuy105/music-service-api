@@ -19,11 +19,14 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PlaylistService {
     private final PlaylistRepository playlistRepository;
+    private final GenreService genreService;
     private final CacheService cacheService;
     private static final int PLAYLIST_PAGE_SIZE = 200;
     private static final int SEARCH_PAGE_SIZE = 20;
@@ -59,6 +62,11 @@ public class PlaylistService {
                 .of(page != null ? page : 1, SEARCH_PAGE_SIZE)
                 .search(searchQuery)
                 .build());
+    }
+
+    public List<Playlist> findSystemGeneratedPlaylistByGenre(Long genreId) {
+        String genreName = genreService.getGenre(genreId).getName();
+        return playlistRepository.findSystemGeneratedFeaturedPlaylistByGenreName(genreName);
     }
 
     public void createPlaylist(PlaylistDto playlistDto, Authentication authentication) {

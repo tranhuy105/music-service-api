@@ -63,12 +63,10 @@ public class UserInteractionDao implements UserInteractionRepository {
         RowMapper<Long> rowMapper = (rs, rowNum) -> rs.getLong("track_id");
         List<Long> savedTrackIds = jdbcTemplate.query(sql, params, rowMapper);
 
-        savedTrackIds.forEach(System.out::println);
-
         return trackIds.stream()
                 .collect(Collectors.toMap(
                         trackId -> trackId,
-                        trackId -> savedTrackIds.contains(trackId)
+                        savedTrackIds::contains
                 ));
     }
 
@@ -97,5 +95,26 @@ public class UserInteractionDao implements UserInteractionRepository {
         String sql = "SELECT EXISTS(SELECT 1 FROM follows WHERE user_id = ? AND artist_profile_id = ?)";
         Boolean exists = jdbcTemplate.queryForObject(sql, Boolean.class, userId, artistId);
         return exists != null && exists;
+    }
+
+    @Override
+    public Map<Long, Boolean> findFollowingArtistIds(Long userId, List<Long> artistIds) {
+        String sql = "SELECT artist_profile_id FROM follows WHERE user_id = ? AND artist_profile_id IN (" +
+                artistIds.stream().map(id -> "?").collect(Collectors.joining(",")) +
+                ")";
+        Object[] params = new Object[artistIds.size() + 1];
+        params[0] = userId;
+        for (int i = 0; i < artistIds.size(); i++) {
+            params[i + 1] = artistIds.get(i);
+        }
+
+        RowMapper<Long> rowMapper = (rs, rowNum) -> rs.getLong("artist_profile_id");
+        List<Long> followArtistId = jdbcTemplate.query(sql, params, rowMapper);
+
+        return artistIds.stream()
+                .collect(Collectors.toMap(
+                        artistId -> artistId,
+                        followArtistId::contains
+                ));
     }
 }

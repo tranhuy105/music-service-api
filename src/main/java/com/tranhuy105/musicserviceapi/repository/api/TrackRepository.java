@@ -20,6 +20,8 @@ public interface TrackRepository {
 
     List<Track> findTrackRawByAlbumId(Long albumId);
 
+    List<TrackDetail> findTopTrackByArtistId(Long artistId, int limit);
+
     Long insert(CreateTrackRequestDto dto);
 
     List<TrackQueueDto> findTrackQueueFromPlaylist(@NonNull Long playlistId);

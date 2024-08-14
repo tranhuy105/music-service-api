@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/artists")
 @RequiredArgsConstructor
@@ -28,6 +30,17 @@ public class ArtistController {
     @GetMapping("/{id}")
     public ResponseEntity<ArtistProfile> findArtistById(@PathVariable Long id) {
         return ResponseEntity.ok(artistService.findArtistProfileById(id));
+    }
+
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<Artist>> findRelatedArtistById(@PathVariable Long id,
+                                                             @RequestParam(value = "limit", required = false) Integer limit) {
+        return ResponseEntity.ok(artistService.findRelatedArtist(id, limit));
+    }
+
+    @GetMapping("/{id}/top-tracks")
+    public ResponseEntity<List<TrackDetail>> findTopTrackByArtistId(@PathVariable Long id) {
+        return ResponseEntity.ok(artistService.findTopTrack(id));
     }
 
     @PostMapping

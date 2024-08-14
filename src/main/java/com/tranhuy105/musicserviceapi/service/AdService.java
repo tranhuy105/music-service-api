@@ -28,7 +28,7 @@ public class AdService {
     }
 
     public void handleAdInsertionIfNeeded(User user, StreamingSession session) {
-        if (user.getIsPremium()) {
+        if (!user.getIsPremium()) {
             session.incrementAdCounter();
             if (session.isAdIntervalReached()) {
                 insertAdToQueue(session);
@@ -37,7 +37,7 @@ public class AdService {
     }
 
     private boolean shouldForceAd(User user, StreamingSession session) {
-        return !session.isAdCooldownPeriodPassed(AD_COOLDOWN_THRESHOLD) && user.getIsPremium();
+        return !session.isAdCooldownPeriodPassed(AD_COOLDOWN_THRESHOLD) && !user.getIsPremium();
     }
 
     private void insertAdToQueue(StreamingSession session) {

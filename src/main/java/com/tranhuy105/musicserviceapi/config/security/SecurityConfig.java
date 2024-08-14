@@ -36,7 +36,9 @@ public class SecurityConfig {
                                         "/api/tracks/**",
                                         "/api/playlists/**",
                                         "/api/artists/**",
-                                        "/api/subscriptions/vnpay-callback").permitAll()
+                                        "/api/subscriptions/vnpay-callback",
+                                        "/api/browse/**")
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

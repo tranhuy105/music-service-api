@@ -88,6 +88,6 @@ public class QueryUtil {
     }
 
     private boolean isValidSortBy(String sortBy) {
-        return sortBy.matches("^[a-zA-Z_]+$");
+        return sortBy.matches("^[a-zA-Z_.]+$");
     }
 }
