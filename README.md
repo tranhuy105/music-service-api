@@ -8,14 +8,14 @@ JDBC is used for database operations due to its straightforwardness and effectiv
 
 ## Technologies Used
 
-- **Java & Spring Boot:** Core technologies for building the RESTful API.
-- **Redis:** Utilized for caching frequently accessed data like playlists and track details, and for distributed locking to manage concurrent access to shared resources (e.g., streaming sessions).
-- **MySQL:** Database for storing persistent data, including user profiles, track metadata, and playlists.
-- **Flyway:** Database migration tool for managing schema version control, ensuring the database structure is up-to-date and consistent across environments.
-- **Docker:** Used for containerizing the application.
-- **Amazon S3:** Utilized for storing and serving music tracks, providing scalable and reliable storage for audio files.
-- **Amazon CloudFront:** CDN service used to deliver music tracks with low latency and high transfer speeds, enhancing the streaming experience by reducing buffering and improving load times.
-- **VNPay Sandbox:** Payment gateway used for processing transactions and managing user subscriptions, including a sandbox environment for testing payment integration.
+- **Java & Spring Boot:** Frameworks for building and managing the RESTful API.
+- **Redis:** Enhances performance with caching and supports distributed locking.
+- **MySQL:** Relational database for storing user data, track info, and playlists.
+- **Flyway:** Handles database schema migrations and version control.
+- **Docker:** Containerizing the application.
+- **Amazon S3:** Scalable storage for audio files.
+- **Amazon CloudFront:** Accelerates music delivery with low-latency CDN.
+- **VNPay Sandbox:** Manages and tests payment processing and subscriptions.
 
 ## Database Migration
 
@@ -54,7 +54,7 @@ The `PlayerService` class manages streaming sessions for users, including:
 The `RedisService` class implements the `CacheService` interface:
 
 - **Caching:** Stores session data, track details, and other frequently accessed information in Redis with configurable expiration times to enhance performance (TLS).
-- **Distributed Locking:** Manages thread-safe operations across distributed service instances using Redisson’s locking mechanism.
+- **Distributed Locking:** Manages thread-safe operations when working with `StreamingSession` using Redisson’s locking mechanism.
 - **Cache Management:** Provides methods to evict specific or all caches, ensuring efficient removal of stale data.
 
 ### 3. **User Subscriptions and Payment Processing**
@@ -73,8 +73,7 @@ The service differentiates between premium and non-premium users, impacting thei
     - **Playback Experience:** May have advertisements inserted to support the free-tier service.
 
     
-- **Subscription Management:** Oversees the entire lifecycle of user subscriptions, including creation, renewal, and updates to subscription plans. This ensures users receive the appropriate features based on their subscription status.
-
+Subscription Management: Handles everything related to user subscriptions, like setting them up, renewing them, and changing plans. This makes sure users get the features they’re supposed to based on their subscription.
 
 - **Payment Processing:** Utilizes VNPay for secure payment transactions related to subscription services. This encompasses:
     - **Payment Requests:** Generating secure URLs for transactions and managing payment requests.
