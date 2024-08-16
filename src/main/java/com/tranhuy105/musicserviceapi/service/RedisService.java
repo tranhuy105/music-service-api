@@ -3,6 +3,7 @@ package com.tranhuy105.musicserviceapi.service;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.utils.CachePrefix;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisService implements CacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedissonClient redissonClient;
@@ -24,13 +26,25 @@ public class RedisService implements CacheService {
     @Override
     public <T> T cacheOrFetch(String cacheKey, Supplier<T> fallback) {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        T cachedValue = (T) valueOperations.get(cacheKey);
+        T cachedValue = null;
+
+        try {
+            cachedValue = (T) valueOperations.get(cacheKey);
+        } catch (Exception e) {
+            log.error("Cache retrieval failed, proceed to use fallback supplier: " + e.getMessage());
+        }
+
         if (cachedValue == null) {
             cachedValue = fallback.get();
             if (cachedValue != null) {
-                valueOperations.set(cacheKey, cachedValue, cacheDuration);
+                try {
+                    valueOperations.set(cacheKey, cachedValue, cacheDuration);
+                } catch (Exception e) {
+                    log.error("Cache storing failed: " + e.getMessage());
+                }
             }
         }
+
         return cachedValue;
     }
 
@@ -68,10 +82,14 @@ public class RedisService implements CacheService {
 
     @Override
     public void evictCache(CachePrefix cachePrefix, Object... parts) {
-        String cacheKeyPattern = getCacheKey(cachePrefix, parts) + "*";
-        Set<String> keys = redisTemplate.keys(cacheKeyPattern);
-        if (keys != null && !keys.isEmpty()) {
-            redisTemplate.delete(keys);
+        try {
+            String cacheKeyPattern = getCacheKey(cachePrefix, parts) + "*";
+            Set<String> keys = redisTemplate.keys(cacheKeyPattern);
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+            }
+        } catch (Exception exception) {
+            log.error("FAIL TO EVICT CACHE FOR "+cachePrefix.name()+". THIS MAY RESULT IN STALE DATA.", exception);
         }
     }
 
