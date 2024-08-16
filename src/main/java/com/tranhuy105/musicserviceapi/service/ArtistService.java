@@ -1,6 +1,7 @@
 package com.tranhuy105.musicserviceapi.service;
 
 import com.tranhuy105.musicserviceapi.dto.CreateArtistProfileRequestDto;
+import com.tranhuy105.musicserviceapi.dto.UpdateArtistProfileRequestDto;
 import com.tranhuy105.musicserviceapi.exception.ObjectNotFoundException;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.repository.api.ArtistRepository;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,7 +26,6 @@ public class ArtistService {
 
     private static final int SEARCH_PAGE_SIZE = 20;
 
-    @Transactional
     public void createArtistProfile(CreateArtistProfileRequestDto dto) {
         UserDetails userDetails = userRepository.findById(dto.getUserId()).orElseThrow(
                 () -> new ObjectNotFoundException("user", dto.getUserId().toString())
@@ -80,5 +81,33 @@ public class ArtistService {
                         () -> new ObjectNotFoundException("artist", id.toString())
                 )
         );
+    }
+
+    @Transactional
+    public void updateArtistProfile(Long artistId, UpdateArtistProfileRequestDto dto) {
+        findArtistProfileById(artistId);
+        artistRepository.updateArtistProfile(artistId, dto);
+        if (dto.getGenreIds() != null && !dto.getGenreIds().isEmpty()) {
+            artistRepository.updateArtistGenres(artistId, dto.getGenreIds());
+        }
+        cacheService.evictCache(CachePrefix.ARTIST_PROFILE, artistId);
+    }
+
+    public void updateArtistGenre(Long artistId, List<Long> genreIds) {
+        if (genreIds == null) {
+            genreIds = new ArrayList<>();
+        }
+        artistRepository.updateArtistGenres(artistId, genreIds);
+    }
+
+    @Transactional
+    public void deleteArtistProfile(Long artistId) {
+        findArtistProfileById(artistId);
+        artistRepository.deleteArtistProfile(artistId);
+        cacheService.evictCache(CachePrefix.ARTIST_PROFILE, artistId);
+    }
+
+    public Artist findArtistByUserId(Long userId) {
+        return artistRepository.findArtistByUserId(userId).orElse(null);
     }
 }

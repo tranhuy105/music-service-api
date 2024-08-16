@@ -20,6 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
@@ -133,5 +134,18 @@ public class ExceptionHandlerAdvice {
     public ResponseEntity<ExceptionResponseDto> handleException(NoResourceFoundException ex) {
         return ResponseEntity.status(BAD_REQUEST).body(ExceptionResponseDto.builder()
                 .message(ex.getMessage()).httpStatus(BAD_REQUEST).build());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ExceptionResponseDto> handleException(IllegalArgumentException ex) {
+        return ResponseEntity.status(BAD_REQUEST).body(ExceptionResponseDto.builder()
+                .message(ex.getMessage()).httpStatus(BAD_REQUEST).build());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ExceptionResponseDto> handleException() {
+        return ResponseEntity.status(BAD_REQUEST).body(ExceptionResponseDto.builder()
+                .message("Invalid Path Variable")
+                .httpStatus(BAD_REQUEST).build());
     }
 }

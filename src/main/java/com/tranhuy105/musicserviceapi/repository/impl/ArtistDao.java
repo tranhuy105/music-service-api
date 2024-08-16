@@ -1,6 +1,7 @@
 package com.tranhuy105.musicserviceapi.repository.impl;
 
 import com.tranhuy105.musicserviceapi.dto.CreateArtistProfileRequestDto;
+import com.tranhuy105.musicserviceapi.dto.UpdateArtistProfileRequestDto;
 import com.tranhuy105.musicserviceapi.mapper.ArtistProfileRowMapper;
 import com.tranhuy105.musicserviceapi.mapper.ArtistRowMapper;
 import com.tranhuy105.musicserviceapi.model.Artist;
@@ -76,5 +77,29 @@ public class ArtistDao implements ArtistRepository {
     public void insert(CreateArtistProfileRequestDto dto) {
         String sql = "{CALL createArtistProfile(?, ?, ?, ?)}";
         jdbcTemplate.update(sql, dto.getUserId(), dto.getStageName(), dto.getBio(), dto.getProfilePictureUrl());
+    }
+
+    @Override
+    public void updateArtistProfile(Long artistId, UpdateArtistProfileRequestDto dto) {
+        String sql = "UPDATE artist_profiles SET stage_name = ?, bio = ?, profile_picture_url = ? WHERE id = ?";
+        jdbcTemplate.update(sql, dto.getStageName(), dto.getBio(), dto.getProfilePictureUrl(), artistId);
+    }
+
+    @Override
+    @Transactional
+    public void updateArtistGenres(Long artistId, List<Long> genreIds) {
+        String deleteSql = "DELETE FROM artist_genres WHERE artist_id = ?";
+        jdbcTemplate.update(deleteSql, artistId);
+
+        String insertSql = "INSERT INTO artist_genres (artist_id, genre_id) VALUES (?, ?)";
+        for (Long genreId : genreIds) {
+            jdbcTemplate.update(insertSql, artistId, genreId);
+        }
+    }
+
+    @Override
+    public void deleteArtistProfile(Long artistId) {
+        String sql = "DELETE FROM artist_profiles WHERE id = ?";
+        jdbcTemplate.update(sql, artistId);
     }
 }
