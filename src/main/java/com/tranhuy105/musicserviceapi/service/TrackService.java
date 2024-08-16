@@ -7,9 +7,10 @@ import com.tranhuy105.musicserviceapi.repository.api.AlbumRepository;
 import com.tranhuy105.musicserviceapi.repository.api.ArtistRepository;
 import com.tranhuy105.musicserviceapi.repository.api.TrackRepository;
 import com.tranhuy105.musicserviceapi.utils.CachePrefix;
+import com.tranhuy105.musicserviceapi.utils.FileUtil;
 import com.tranhuy105.musicserviceapi.utils.Util;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TrackService {
     private final TrackRepository trackRepository;
     private final ArtistRepository artistRepository;
@@ -49,15 +50,41 @@ public class TrackService {
                                MultipartFile multipartFile,
                                Authentication authentication) throws IOException {
         artistValidator(dto.getAlbumId(), authentication);
-        File file = convertMultipartFileToFile(multipartFile);
-        dto.setDuration(extractTrackDuration(file));
-        Long trackId = trackRepository.insert(dto);
-        storageService.uploadMediaItem(file, trackId.toString(), "track");
+
+        File originalFile = FileUtil.convertMultipartFileToFile(multipartFile);
+        File lowQualityFile = null;
+        String highQualityKey = null;
+
+        try {
+            int duration = 0;
+            try {
+                duration = FileUtil.getAudioDuration(originalFile);
+            } catch (Exception exception) {
+                log.error("Fail to extract track duration: ", exception);
+            }
+            lowQualityFile = FileUtil.reduceAudioQuality(originalFile);
+            dto.setDuration(duration);
+            Long trackId = trackRepository.insert(dto);
+            highQualityKey = storageService.uploadMediaItem(originalFile, trackId.toString(), "track");
+            storageService.uploadMediaItem(lowQualityFile, trackId.toString(), "track_low");
+        } catch (Exception e) {
+            log.error("Error processing track upload", e);
+            if (highQualityKey != null) {
+                try {
+                    storageService.deleteMediaItem(highQualityKey);
+                } catch (Exception exception) {
+                    log.error("Fail to delete stale file on storage: ", exception);
+                }
+            }
+            throw new RuntimeException("Failed to upload track", e);
+        } finally {
+            FileUtil.cleanupFile(originalFile);
+            if (lowQualityFile != null) {
+                FileUtil.cleanupFile(lowQualityFile);
+            }
+        }
     }
 
-    public int extractTrackDuration(File file) {
-        return 0;
-    }
 
     private void artistValidator(Long albumId, Authentication authentication) {
         Artist artist = checkArtistProfile(authentication);
@@ -77,15 +104,5 @@ public class TrackService {
         return artistRepository.findArtistByUserId(userId).orElseThrow(
                 () -> new AccessDeniedException("This artist does not associated with any artist profile!")
         );
-    }
-
-    private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
-        File file = File.createTempFile("temp", multipartFile.getOriginalFilename());
-
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            fos.write(multipartFile.getBytes());
-        }
-
-        return file;
     }
 }
