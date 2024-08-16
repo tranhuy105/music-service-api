@@ -87,11 +87,7 @@ public class PlaylistService {
         playlist.setIsPublic(updatePlaylistDto.getIsPublic());
         playlist.setCoverUrl(updatePlaylistDto.getCoverUrl());
         playlistRepository.updatePlaylist(id, playlist);
-        try {
-            cacheService.evictCache(CachePrefix.PLAYLIST, id);
-        } catch (Exception ex) {
-            log.warn("Failed to revalidate cache.", ex.getCause());
-        }
+        cacheService.evictCache(CachePrefix.PLAYLIST, id);
     }
 
     public void insertTrackToEnd(Long playlistId, Long trackId, Authentication authentication) {
@@ -101,12 +97,8 @@ public class PlaylistService {
         playlistValidate(playlistId, authentication);
 
         playlistRepository.insertTrackToEnd(playlistId, trackId, getUserId(authentication));
-        try {
-            cacheService.evictCache(CachePrefix.PLAYLIST, playlistId);
-            cacheService.evictCache(CachePrefix.PLAYLIST_TRACKS, playlistId);
-        } catch (Exception ex) {
-            log.warn("Failed to revalidate cache.", ex.getCause());
-        }
+        cacheService.evictCache(CachePrefix.PLAYLIST, playlistId);
+        cacheService.evictCache(CachePrefix.PLAYLIST_TRACKS, playlistId);
     }
 
     public void deleteTrack(Long playlistId, Long trackId, Authentication authentication) {
@@ -116,12 +108,8 @@ public class PlaylistService {
         playlistValidate(playlistId, authentication);
 
         playlistRepository.deleteTrack(playlistId, trackId);
-        try {
-            cacheService.evictCache(CachePrefix.PLAYLIST, playlistId);
-            cacheService.evictCache(CachePrefix.PLAYLIST_TRACKS, playlistId);
-        } catch (Exception ex) {
-            log.warn("Failed to revalidate cache.", ex.getCause());
-        }
+        cacheService.evictCache(CachePrefix.PLAYLIST, playlistId);
+        cacheService.evictCache(CachePrefix.PLAYLIST_TRACKS, playlistId);
     }
 
     public void moveTrack(@NonNull Long playlistId, @NonNull Long trackId, @NonNull Long newPosition, Authentication authentication) {
@@ -131,12 +119,8 @@ public class PlaylistService {
         playlistValidate(playlistId, authentication);
 
         playlistRepository.moveTrack(playlistId, trackId, newPosition);
-        try {
-            cacheService.evictCache(CachePrefix.PLAYLIST, playlistId);
-            cacheService.evictCache(CachePrefix.PLAYLIST_TRACKS, playlistId);
-        } catch (Exception ex) {
-            log.warn("Failed to revalidate cache.", ex.getCause());
-        }
+        cacheService.evictCache(CachePrefix.PLAYLIST, playlistId);
+        cacheService.evictCache(CachePrefix.PLAYLIST_TRACKS, playlistId);
     }
 
     private void playlistValidate(Long playlistId, Authentication authentication) {

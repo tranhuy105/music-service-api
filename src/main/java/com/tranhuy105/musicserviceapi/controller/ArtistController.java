@@ -1,12 +1,11 @@
 package com.tranhuy105.musicserviceapi.controller;
 
 
-import com.tranhuy105.musicserviceapi.dto.CreateArtistProfileRequestDto;
+import com.tranhuy105.musicserviceapi.dto.UpdateArtistProfileRequestDto;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.service.ArtistService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -43,10 +42,19 @@ public class ArtistController {
         return ResponseEntity.ok(artistService.findTopTrack(id));
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MANAGER')")
-    public void createArtistProfile(@RequestBody @Valid CreateArtistProfileRequestDto dto) {
-        artistService.createArtistProfile(dto);
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ARTIST') || hasRole('ROLE_MANAGER')")
+    public ResponseEntity<String> updateArtistProfile(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateArtistProfileRequestDto dto) {
+        artistService.updateArtistProfile(id, dto);
+        return ResponseEntity.ok("Artist profile updated successfully.");
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<String> deleteArtistProfile(@PathVariable Long id) {
+        artistService.deleteArtistProfile(id);
+        return ResponseEntity.ok("Artist profile deleted successfully.");
     }
 }

@@ -19,7 +19,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserDao implements UserRepository {
     private final JdbcTemplate jdbcTemplate;
-    private static final Logger logger = LoggerFactory.getLogger(UserDao.class);
 
     @Override
     public Optional<User> findByEmail(@NonNull String email) {
@@ -42,6 +41,45 @@ public class UserDao implements UserRepository {
         jdbcTemplate.update(sql, user.getEmail(), user.getPassword());
     }
 
+    @Override
+    @Transactional
+    public void update(@NonNull User user) {
+        String sql = "UPDATE users SET firstname = ?, lastname = ?, dob = ? WHERE id = ?";
+        jdbcTemplate.update(sql, user.getFirstname(), user.getLastname(), user.getDob(), user.getId());
+    }
 
+    @Override
+    public void removeAllRolesFromUser(Long userId) {
+        String sql = "DELETE FROM user_role WHERE user_id = ?";
+        jdbcTemplate.update(sql, userId);
+    }
+
+    @Override
+    public void addRolesToUser(Long userId, List<Long> roleIds) {
+        String sql = "INSERT INTO user_role (user_id, role_id) VALUES (?, ?)";
+
+        List<Object[]> batchArgs = new ArrayList<>();
+        for (Long roleId : roleIds) {
+            batchArgs.add(new Object[]{userId, roleId});
+        }
+
+        jdbcTemplate.batchUpdate(sql, batchArgs);
+    }
+
+    @Override
+    public void deleteRolesFromUser(@NonNull Long userId, @NonNull List<Long> roleIds) {
+        if (roleIds.isEmpty()) {
+            return;
+        }
+
+        String sql = "DELETE FROM user_role WHERE user_id = ? AND role_id = ?";
+
+        List<Object[]> batchArgs = new ArrayList<>();
+        for (Long roleId : roleIds) {
+            batchArgs.add(new Object[]{userId, roleId});
+        }
+
+        jdbcTemplate.batchUpdate(sql, batchArgs);
+    }
 
 }

@@ -62,7 +62,7 @@ public class AlbumDao implements AlbumRepository {
     @Transactional
     @Override
     public void insert(CreateAlbumRequestDto dto) {
-        String artistRolesJson = null;
+        String artistRolesJson;
         try {
             artistRolesJson = objectMapper.writeValueAsString(dto.getArtistRoles());
         } catch (JsonProcessingException e) {
@@ -73,8 +73,20 @@ public class AlbumDao implements AlbumRepository {
     }
 
     @Override
+    public void update(Album album) {
+        String sql = "UPDATE albums SET title = ?, cover_url = ?, release_date = ?, is_single = ? WHERE id = ?";
+        jdbcTemplate.update(sql, album.getTitle(), album.getCoverUrl(), album.getReleaseDate(), album.getIsSingle(), album.getId());
+    }
+
+    @Override
+    public void delete(Long id) {
+        String sql = "DELETE FROM albums WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
     public void linkNewArtist(AlbumArtistCRUDRequestDto dto) {
-        String sql = "{CALL linkArtistToAlbum(?, ?, ?)}";
+        String sql = "INSERT INTO album_artists (album_id, artist_id, role) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, dto.getAlbumId(), dto.getArtistId(), dto.getRole());
     }
 

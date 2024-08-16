@@ -7,6 +7,9 @@ import com.tranhuy105.musicserviceapi.model.User;
 import com.tranhuy105.musicserviceapi.repository.api.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,5 +34,31 @@ public class UserService {
                 .isPremium(user.getIsPremium())
                 .roles(user.getRoles().stream().map(Role::getName).toList())
                 .build();
+    }
+
+    public void updateUser(Long userId, UserDto userDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("user", userId.toString()));
+
+        user.setFirstname(userDto.getFirstname());
+        user.setLastname(userDto.getLastname());
+        user.setDob(userDto.getDob());
+
+        userRepository.update(user);
+    }
+
+    @Transactional
+    public void assignRolesToUser(Long userId, List<Long> roleIds) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("user", userId.toString()));
+        userRepository.removeAllRolesFromUser(userId);
+        userRepository.addRolesToUser(userId, roleIds);
+    }
+
+    @Transactional
+    public void revokeRolesFromUser(Long userId, List<Long> roleIds) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("user", userId.toString()));
+        userRepository.deleteRolesFromUser(userId, roleIds);
     }
 }
