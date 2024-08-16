@@ -85,8 +85,8 @@ public class ArtistService {
 
     @Transactional
     public void updateArtistProfile(Long artistId, UpdateArtistProfileRequestDto dto) {
-        findArtistProfileById(artistId);
-        artistRepository.updateArtistProfile(artistId, dto);
+        Artist artist = findArtistProfileById(artistId);
+        artistRepository.updateArtistProfile(artist);
         if (dto.getGenreIds() != null && !dto.getGenreIds().isEmpty()) {
             artistRepository.updateArtistGenres(artistId, dto.getGenreIds());
         }

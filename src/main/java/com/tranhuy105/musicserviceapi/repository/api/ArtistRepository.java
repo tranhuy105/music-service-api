@@ -21,7 +21,7 @@ public interface ArtistRepository {
     Optional<Artist> findArtistByUserId(Long userId);
 
     void insert(CreateArtistProfileRequestDto dto);
-    void updateArtistProfile(Long artistId, UpdateArtistProfileRequestDto dto);
+    void updateArtistProfile(Artist artist);
     void updateArtistGenres(Long artistId, List<Long> genreIds);
     void deleteArtistProfile(Long artistId);
 }

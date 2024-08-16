@@ -80,9 +80,9 @@ public class ArtistDao implements ArtistRepository {
     }
 
     @Override
-    public void updateArtistProfile(Long artistId, UpdateArtistProfileRequestDto dto) {
+    public void updateArtistProfile(Artist artist) {
         String sql = "UPDATE artist_profiles SET stage_name = ?, bio = ?, profile_picture_url = ? WHERE id = ?";
-        jdbcTemplate.update(sql, dto.getStageName(), dto.getBio(), dto.getProfilePictureUrl(), artistId);
+        jdbcTemplate.update(sql, artist.getStageName(), artist.getBio(), artist.getProfilePictureUrl(), artist.getId());
     }
 
     @Override
