@@ -2,10 +2,7 @@ package com.tranhuy105.musicserviceapi.controller;
 
 import com.tranhuy105.musicserviceapi.model.ArtistRequest;
 import com.tranhuy105.musicserviceapi.model.Page;
-import com.tranhuy105.musicserviceapi.service.ArtistRequestService;
-import com.tranhuy105.musicserviceapi.service.CacheService;
-import com.tranhuy105.musicserviceapi.service.S3Service;
-import com.tranhuy105.musicserviceapi.service.SystemService;
+import com.tranhuy105.musicserviceapi.service.*;
 import com.tranhuy105.musicserviceapi.utils.Util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +27,7 @@ public class AdminController {
     private final SystemService service;
     private final CacheService cacheService;
     private final S3Service s3Service;
+    private final UserService userService;
     private final ArtistRequestService artistRequestService;
 
     @PostMapping("/similar-artist")
@@ -40,6 +38,24 @@ public class AdminController {
     @PostMapping("/generate-genre-playlist")
     public ResponseEntity<String> generateSystemPlaylistSeedByGenre() {
         return executeAndMeasureTime(service::generateSystemPlaylists, "Successfully generated playlist seed by genre.");
+    }
+
+    @PutMapping("/users/{userId}/roles")
+    public ResponseEntity<String> assignRolesToUser(
+            @PathVariable Long userId,
+            @RequestParam List<Long> roleIds
+    ) {
+        userService.assignRolesToUser(userId, roleIds);
+        return ResponseEntity.ok("Roles successfully assigned.");
+    }
+
+    @DeleteMapping("/users/{userId}/roles")
+    public ResponseEntity<String> deleteRolesFromUser(
+            @PathVariable Long userId,
+            @RequestParam List<Long> roleIds
+    ) {
+        userService.revokeRolesFromUser(userId, roleIds);
+        return ResponseEntity.ok("Roles revoked successfully.");
     }
 
     @PostMapping("/tracks/{id}")

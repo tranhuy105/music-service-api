@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("api/users")
@@ -42,9 +41,13 @@ public class UserController {
         return ResponseEntity.ok("Your request to become an artist has been submitted.");
     }
 
-    @GetMapping("/request-artist")
-    public ResponseEntity<List<ArtistRequest>> getMyArtistRequests(Authentication authentication) {
-        List<ArtistRequest> requests = artistRequestService.findRequestsByUserId(Util.extractUserIdFromAuthentication(authentication));
-        return ResponseEntity.ok(requests);
+    @PutMapping
+    public ResponseEntity<String> updateUser(
+            @RequestBody @Valid UserDto userDto,
+            Authentication authentication
+    ) {
+        Long id = Util.extractUserIdFromAuthentication(authentication);
+        userService.updateUser(id, userDto);
+        return ResponseEntity.ok("User updated successfully.");
     }
 }
