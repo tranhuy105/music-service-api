@@ -3,6 +3,7 @@ package com.tranhuy105.musicserviceapi.service;
 import com.tranhuy105.musicserviceapi.dto.AlbumDto;
 import com.tranhuy105.musicserviceapi.dto.CreateAlbumRequestDto;
 import com.tranhuy105.musicserviceapi.dto.AlbumArtistCRUDRequestDto;
+import com.tranhuy105.musicserviceapi.dto.UpdateAlbumRequestDto;
 import com.tranhuy105.musicserviceapi.exception.ObjectNotFoundException;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.model.ref.AlbumArtist;
@@ -59,10 +60,27 @@ public class AlbumService {
         if (dto.getArtistRoles().stream().noneMatch(
                 requestArtist -> requestArtist.getArtistId().equals(artist.getId()))
         ) {
-            throw new RuntimeException("You must include yourself as an artist.");
+            throw new IllegalArgumentException("You must include yourself as an artist.");
         }
 
         albumRepository.insert(dto);
+    }
+
+    public void updateAlbum(Long albumId, UpdateAlbumRequestDto dto, Authentication authentication) {
+        Album album = artistValidator(albumId, authentication);
+
+        album.setCoverUrl(dto.getCoverUrl());
+        album.setTitle(dto.getTitle());
+        album.setIsSingle(dto.getIsSingle());
+        album.setReleaseDate(dto.getReleaseDate());
+        albumRepository.update(album);
+        cacheService.evictCache(CachePrefix.ALBUM, albumId);
+    }
+
+    public void deleteAlbum(Long albumId, Authentication authentication) {
+        artistValidator(albumId, authentication);
+        albumRepository.delete(albumId);
+        evictAlbumCache(albumId);
     }
 
     public List<Album> findRelatedAlbum(Long id, Integer limit) {
@@ -71,13 +89,13 @@ public class AlbumService {
     }
 
     public void addAlbumArtist(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
-        artistValidator(dto, authentication);
+        artistValidator(dto.getAlbumId(), authentication);
         albumRepository.linkNewArtist(dto);
         evictAlbumCache(dto.getAlbumId());
     }
 
     public void removeAlbumArtist(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
-        AlbumDto albumDto = artistValidator(dto, authentication);
+        AlbumDto albumDto = artistValidator(dto.getAlbumId(), authentication);
         if (albumDto.getArtists().size() <= 1) {
             throw new RuntimeException("Album must have at least one artist");
         }
@@ -86,14 +104,14 @@ public class AlbumService {
     }
 
     public void updateAlbumArtist(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
-        artistValidator(dto, authentication);
+        artistValidator(dto.getAlbumId(), authentication);
         albumRepository.updateLinkedArtist(dto);
         evictAlbumCache(dto.getAlbumId());
     }
 
-    private AlbumDto artistValidator(AlbumArtistCRUDRequestDto dto, Authentication authentication) {
+    private AlbumDto artistValidator(Long albumId, Authentication authentication) {
         Artist artist = checkArtistProfile(authentication);
-        AlbumDto albumDto = findAlbumById(dto.getAlbumId());
+        AlbumDto albumDto = findAlbumById(albumId);
         boolean isValidArtist = albumDto.getArtists().stream()
                 .anyMatch(existingArtist -> existingArtist.getId().equals(artist.getId()));
 

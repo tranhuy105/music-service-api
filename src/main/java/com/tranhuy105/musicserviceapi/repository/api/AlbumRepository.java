@@ -17,6 +17,8 @@ public interface AlbumRepository {
     List<Album> findRelatedAlbum(Long id, int limit);
 
     void insert(CreateAlbumRequestDto dto);
+    void update(Album album);
+    void delete(Long id);
 
     void linkNewArtist(AlbumArtistCRUDRequestDto dto);
 

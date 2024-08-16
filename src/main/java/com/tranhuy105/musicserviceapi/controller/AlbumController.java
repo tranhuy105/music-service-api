@@ -3,6 +3,7 @@ package com.tranhuy105.musicserviceapi.controller;
 import com.tranhuy105.musicserviceapi.dto.AlbumDto;
 import com.tranhuy105.musicserviceapi.dto.CreateAlbumRequestDto;
 import com.tranhuy105.musicserviceapi.dto.AlbumArtistCRUDRequestDto;
+import com.tranhuy105.musicserviceapi.dto.UpdateAlbumRequestDto;
 import com.tranhuy105.musicserviceapi.model.*;
 import com.tranhuy105.musicserviceapi.service.AlbumService;
 import jakarta.validation.Valid;
@@ -32,6 +33,22 @@ public class AlbumController {
     @GetMapping("/{id}")
     public ResponseEntity<AlbumDto> findAlbumById(@PathVariable Long id) {
         return ResponseEntity.ok(albumService.findAlbumById(id));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ARTIST')")
+    public ResponseEntity<Void> updateAlbum(@PathVariable Long id,
+                                            @RequestBody @Valid UpdateAlbumRequestDto dto,
+                                            Authentication authentication) {
+        albumService.updateAlbum(id, dto, authentication);
+        return ResponseEntity.accepted().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ARTIST')")
+    public ResponseEntity<Void> deleteAlbum(@PathVariable Long id, Authentication authentication) {
+        albumService.deleteAlbum(id, authentication);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/related")
