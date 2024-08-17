@@ -2,33 +2,26 @@
 
 ## Overview
 
-This project provides a REST API similar to Spotify, letting you manage and stream music with advanced search options and fast performance using Redis caching
+This project offers a REST API which was inspired by Spotify, allowing you to manage and stream music. It features robust search capabilities and fast performance, enhanced by Redis caching.
 
 JDBC is used for database operations due to its straightforwardness and effectiveness in managing native SQL queries, especially when complex joins make JPA a bit frustrating (personal opinion).
 
 ## Technologies Used
 
-- **Java & Spring Boot:** Frameworks for building and managing the RESTful API.
-- **Redis:** Enhances performance with caching and supports distributed locking.
-- **MySQL:** Relational database for storing user data, track info, and playlists.
-- **Flyway:** Handles database schema migrations and version control.
-- **Docker:** Containerizing the application.
-- **Amazon S3:** Scalable storage for audio files.
-- **Amazon CloudFront:** Accelerates music delivery with low-latency CDN.
-- **VNPay Sandbox:** Manages and tests payment processing and subscriptions.
+1. **Java & Spring Boot:** Frameworks for building and managing the RESTful API.
+2. **Redis:** Enhances performance with caching and supports distributed locking.
+3. **MySQL:** Relational database for storing user data, track info, and playlists.
+4. **Flyway:** Handles database schema migrations and version control.
+5. **Docker:** Containerizing the application.
+6. **Amazon S3:** Scalable storage for audio files.
+7. **Amazon CloudFront:** Accelerates music delivery with low-latency CDN.
+8. **VNPay Sandbox:** Manages and tests payment processing and subscriptions.
+9. **FFmpeg:** Provides audio processing capabilities, including track duration extraction and quality reduction.
+
 
 ## Database Migration
 
-Database schema changes are managed using Flyway for consistency and version control. For detailed information on the database schema, migrations, and version history, please refer to the `db.migration` directory.
-
-You can explore the `db.migration` directory to find:
-
-- **Migration Scripts:** SQL scripts that define changes to the database schema, including table creation, modification, and data migrations.
-- **Schema Definitions:** The current and historical structure of the database, detailing how different components of the database are organized and related.
-- **Version History:** A record of schema changes and migration versions, providing insight into the evolution of the database schema.
-
-For a comprehensive view of the database design and migration details, visit the [db.migration](src/main/resources/db/migration) directory.
-
+Database schema changes are managed using Flyway for consistency and version control. For detailed information on the database schema, migrations, and version history, please refer to the [`db.migration`](src/main/resources/db/migration)directory.
 
 ## API Documentation
 
@@ -37,61 +30,109 @@ For a comprehensive view of the database design and migration details, visit the
 
 ## Features
 
-### 1. **Player Service**
+### 1. Playback Controller
 
-The `PlayerService` class manages streaming sessions for users, including:
+The `PlayerService` class handles streaming sessions for users with the following features:
 
-- **Play Track:** Adds a specific track to the queue and processes advertisements based on user status and playback history.
-- **Next/Previous Track:** Skips to the next or previous track in the session queue.
-- **Pause/Resume Session:** Allows pausing and resuming the current streaming session.
-- **Change Playback Mode:** Supports sequential, shuffle, and repeat modes, regenerating the queue accordingly.
-- **Add to Queue:** Adds tracks to the current session's queue.
-- **Session History:** Retrieves the user’s streaming history, stored in Redis for quick access.
-- An event is produced when a track is streamed for at least 30 seconds.
+- **Play Track:** 
+  - Adds a specific track to the queue.
+  - Processes advertisements based on user status and playback history. (non-premium user)
 
-### 2. **Redis Caching and Locking**
+- **Next/Previous Track:** 
+  - Skips to the next or previous track in the queue.
 
-The `RedisService` class implements the `CacheService` interface:
+- **Pause/Resume Session:** 
+  - Allows pausing and resuming the current streaming session.
 
-- **Caching:** Stores session data, track details, and other frequently accessed information in Redis with configurable expiration times to enhance performance (TLS).
-- **Distributed Locking:** Manages thread-safe operations when working with `StreamingSession` using Redisson’s locking mechanism.
-- **Cache Management:** Provides methods to evict specific or all caches, ensuring efficient removal of stale data.
+- **Change Playback Mode:** 
+  - Supports different playback modes, including:
+    - Shuffle
+    - Sequential (premium only)
+    - Repeat (premium only)
+  - Regenerates the queue according to the selected mode.
 
-### 3. **User Subscriptions and Payment Processing**
+- **Add to Queue:** 
+  - Adds new tracks to the current session’s queue.
 
-The service differentiates between premium and non-premium users, impacting their streaming experience. It also handles user subscriptions and payments:
+- **Session History:** 
+  - Retrieves the user’s streaming history.
+  - Utilizes Redis for quick access and efficient retrieval.
+
+- **Streaming Event:** 
+  - Produces an event when a track is streamed for at least 30 seconds.
+
+---
+
+### 2. Audio Preprocessing
+
+Audio preprocessing tasks are handled using FFmpeg and include:
+
+- **Track Duration Extraction:** 
+  - FFmpeg is used to determine the length of audio tracks, ensuring accurate playback information.
+
+- **Audio Quality Reduction:** 
+  - FFmpeg processes audio files to produce lower-quality versions for non-premium users, while premium users receive high-quality audio. This approach balances performance and quality for different user tiers.
+
+- **Future Plans with AWS Lambda:** 
+  - **Cloud Function:**: Looking to move audio processing tasks to AWS Lambda for better scalability and performance. This would allow processing to happen in the cloud, handling large volumes of audio files more efficiently. Currently, audio processing is handled within `FileUtil` using Java's `Process` class to execute FFmpeg commands.
+
+---
+
+### 3. **Premium Subscriptions and Payment Processing**
+
+The system supports both premium and non-premium user experiences, including managing subscriptions and handling payments:
 
 - **Premium Users:**
     - **Playback Modes:** Have access to all playback modes (shuffle, repeat, sequential).
     - **Advertisements:** Generally do not experience ads during playback.
     - **Playback Experience:** Enjoy an uninterrupted streaming experience with additional features.
-
+    - **Audio Quality:** Can access and stream high-quality audio tracks.
 
 - **Non-Premium Users:**
     - **Playback Mode Restriction:** Restricted to shuffle mode only.
     - **Advertisements:** Experience ads inserted into their playback queue at regular intervals (e.g., every 10 tracks).
     - **Playback Experience:** May have advertisements inserted to support the free-tier service.
+    - **Audio Quality:** Streams lower-quality audio tracks compared to premium users.
 
-    
-Subscription Management: Handles everything related to user subscriptions, like setting them up, renewing them, and changing plans. This makes sure users get the features they’re supposed to based on their subscription.
+- **Subscription Management:** 
+    - Handles everything related to user subscriptions, like setting them up, renewing them, and changing plans. This makes sure users get the features they’re supposed to based on their subscription.
 
-- **Payment Processing:** Utilizes VNPay for secure payment transactions related to subscription services. This encompasses:
-    - **Payment Requests:** Generating secure URLs for transactions and managing payment requests.
-    - **Transaction Verification:** Confirming the results of transactions to update user subscription status accordingly.
-
-- **VNPay Integration:** The `VNPAYConfig` class manages all necessary configurations for VNPay, including payment URLs, merchant codes, secret keys, and other essential settings for processing payments.
-  
+- **VNPay Integration:**
+    - VNPay handles payment transactions, making sure that payments are processed securely and smoothly between users and the app. 
 
 This is just a very basic implementation though as it is not this project main focus
 
+---
 
-### 4. **Basic CRUD Operations**
+### 4. **Redis Caching and Locking**
+
+The `RedisService` class implements the `CacheService` interface:
+
+- **Caching:** 
+    - Stores session data, track details, and other frequently accessed information in Redis with configurable expiration times to enhance performance (TLS).
+
+- **Distributed Locking:** 
+    - Manages thread-safe operations when working with `StreamingSession` using Redisson’s locking mechanism.
+
+- **Cache Management:** 
+    - Provides methods to evict specific or all caches, ensuring efficient removal of stale data.
+
+---
+
+### 5. **Basic CRUD Operations**
 
 The API offers full CRUD (Create, Read, Update, Delete) operations for:
 
-- **User Management:** Creating, updating, retrieving, and deleting user profiles.
-- **Track, Album, Artist Profile Management:** Managing music tracks, including metadata updates and retrieval.
-- **Playlist Management:** Creating and managing user playlists to organize favorite tracks.
+- **User Management:** 
+    - Creating, updating, retrieving, and deleting user profiles.
+
+- **Track, Album, Artist Profile Management:** 
+    - Managing music tracks, including metadata updates and retrieval.
+
+- **Playlist Management:** 
+    - Creating and managing user playlists to organize favorite tracks.
+
+---
 
 ## Future Plans
 
