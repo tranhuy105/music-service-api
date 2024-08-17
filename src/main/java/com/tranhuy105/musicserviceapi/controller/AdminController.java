@@ -26,7 +26,7 @@ import java.util.Map;
 public class AdminController {
     private final SystemService service;
     private final CacheService cacheService;
-    private final S3Service s3Service;
+    private final TrackService trackService;
     private final UserService userService;
     private final ArtistRequestService artistRequestService;
 
@@ -59,13 +59,13 @@ public class AdminController {
     }
 
     @PostMapping("/tracks/{id}")
-    public ResponseEntity<String> fixBrokenAudioLink(@PathVariable Long id,
-                                       @RequestParam(value = "type") String type,
-                                       @RequestParam(value = "file", required = false) MultipartFile file) {
+    public ResponseEntity<String> fixBrokenTrackResource(@PathVariable Long id,
+                                       @RequestParam(value = "file", required = false) MultipartFile file,
+                                                         Authentication authentication) {
         return executeAndMeasureTime(() -> {
             try {
-                s3Service.uploadMediaItem(convertMultipartFileToFile(file), String.valueOf(id), type);
-            } catch (IOException e) {
+                trackService.updateTrackFile(id, file, authentication);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }, String.format("Successfully Upload Media File For Track %s.\nFile: \"%s\", Size: %s.",
@@ -110,17 +110,6 @@ public class AdminController {
 
         artistRequestService.reviewRequest(id, adminId, status, reason);
         return ResponseEntity.ok("OK");
-    }
-
-
-    private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
-        File file = File.createTempFile("temp", multipartFile.getOriginalFilename());
-
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            fos.write(multipartFile.getBytes());
-        }
-
-        return file;
     }
 
     private ResponseEntity<String> executeAndMeasureTime(Runnable action, String successMessage) {

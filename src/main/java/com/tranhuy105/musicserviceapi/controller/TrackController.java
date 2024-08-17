@@ -1,6 +1,7 @@
 package com.tranhuy105.musicserviceapi.controller;
 
 import com.tranhuy105.musicserviceapi.dto.CreateTrackRequestDto;
+import com.tranhuy105.musicserviceapi.dto.UpdateTrackRequestDto;
 import com.tranhuy105.musicserviceapi.model.Page;
 import com.tranhuy105.musicserviceapi.model.TrackDetail;
 import com.tranhuy105.musicserviceapi.service.TrackService;
@@ -37,8 +38,7 @@ public class TrackController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ARTIST')")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void uploadTrack(Authentication authentication,
+    public ResponseEntity<Void> uploadTrack(Authentication authentication,
                             @RequestParam("album_id") Long albumId,
                             @RequestParam("title") @NotEmpty String title,
                             @RequestParam("file")MultipartFile file) throws IOException {
@@ -47,5 +47,30 @@ public class TrackController {
                 file,
                 authentication
         );
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ARTIST')")
+    public ResponseEntity<Void> updateTrack(@PathVariable Long id,
+                                            @RequestBody UpdateTrackRequestDto dto,
+                                            Authentication authentication) {
+        trackService.updateTrack(id, dto, authentication);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/file")
+    public ResponseEntity<Void> updateTrackFile(@PathVariable Long id,
+                                                @RequestParam("file")MultipartFile file,
+                                                Authentication authentication) throws IOException {
+        trackService.updateTrackFile(id, file, authentication);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ARTIST')")
+    public ResponseEntity<Void> deleteTrack(@PathVariable Long id, Authentication authentication) {
+        trackService.deleteTrack(id, authentication);
+        return ResponseEntity.noContent().build();
     }
 }

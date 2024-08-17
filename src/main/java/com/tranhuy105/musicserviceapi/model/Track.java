@@ -1,5 +1,6 @@
 package com.tranhuy105.musicserviceapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,8 @@ public class Track extends MediaItem {
     private String title;
     private Integer duration;
     private Long streamCount;
+    @JsonIgnore
+    private Long albumId;
 
     @Override
     public String getURI() {
