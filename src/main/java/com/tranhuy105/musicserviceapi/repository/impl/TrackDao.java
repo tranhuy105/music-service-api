@@ -127,6 +127,24 @@ public class TrackDao implements TrackRepository {
     }
 
     @Override
+    public Optional<Track> findRawTrackById(Long trackId) {
+        String sql = "SELECT * FROM tracks WHERE id = ?";
+        return jdbcTemplate.query(sql, new TrackRowMapper(), trackId).stream().findFirst();
+    }
+
+    @Override
+    public void updateTrack(Track track) {
+        String sql = "UPDATE tracks SET title = ? WHERE id = ?";
+        jdbcTemplate.update(sql, track.getTitle(), track.getId());
+    }
+
+    @Override
+    public void deleteTrack(Long trackId) {
+        String sql = "DELETE FROM tracks WHERE id = ?";
+        jdbcTemplate.update(sql, trackId);
+    }
+
+    @Override
     public List<TrackQueueDto> findTrackQueueFromPlaylist(@NonNull Long playlistId) {
         String sql = "SELECT * FROM playlist_track WHERE playlist_id = ?";
         return jdbcTemplate.query(sql, new TrackQueueDtoRowMapper(SourceType.PLAYLIST), playlistId);

@@ -76,15 +76,7 @@ public class S3Service implements StorageService{
     }
 
     @Override
-    public URL generateUrl(MediaItem mediaItem) {
-        if (cdnEnabled) {
-            return generateCloudFrontSignedUrl(mediaItem);
-        } else {
-            return generateS3PresignedUrl(mediaItem);
-        }
-    }
-
-    private URL generateCloudFrontSignedUrl(MediaItem mediaItem) {
+    public URL generateUrl(MediaItem mediaItem, boolean isPremium) {
         String uri = mediaItem.getURI();
         String itemId = extractIdFromURI(uri);
         String type = extractTypeFromURI(uri);
@@ -93,6 +85,24 @@ public class S3Service implements StorageService{
             throw new IllegalArgumentException("Invalid URI format");
         }
 
+        if (type.equals("track")) {
+            type = isPremium ? "track" : "track_low";
+            if (!doesObjectExist(type + "/" + itemId)) {
+                if (!isPremium) {
+                    logger.warn("Low-quality track not found for mediaId: " + itemId + ", serving high-quality version.");
+                }
+                type = "track";
+            }
+        }
+
+        if (cdnEnabled) {
+            return generateCloudFrontSignedUrl(type, itemId);
+        } else {
+            return generateS3PresignedUrl(type, itemId);
+        }
+    }
+
+    private URL generateCloudFrontSignedUrl(String type, String itemId) {
         try {
             File privateKeyFile = new File(cloudFrontPrivateKeyPath);
 
@@ -113,15 +123,7 @@ public class S3Service implements StorageService{
         }
     }
 
-    private URL generateS3PresignedUrl(MediaItem mediaItem) {
-        String uri = mediaItem.getURI();
-        String itemId = extractIdFromURI(uri);
-        String type = extractTypeFromURI(uri);
-
-        if (itemId == null || type == null) {
-            throw new IllegalArgumentException("Invalid URI format");
-        }
-
+    private URL generateS3PresignedUrl(String type, String itemId) {
         GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, type + "/" + itemId)
                 .withMethod(HttpMethod.GET)
                 .withExpiration(getExpiration());
@@ -129,7 +131,7 @@ public class S3Service implements StorageService{
     }
 
     @Override
-    public void uploadMediaItem(File file, String mediaId, String mediaType) {
+    public String uploadMediaItem(File file, String mediaId, String mediaType) {
         try {
             String s3Key = String.format("%s/%s", mediaType, mediaId);
 
@@ -140,9 +142,26 @@ public class S3Service implements StorageService{
 
             s3Client.putObject(putObjectRequest);
             logger.info("Upload completed with mediaId: " + mediaId + " and mediaType: " + mediaType);
+
+            return s3Key;
         } catch (Exception e) {
             logger.error("Error uploading to S3: " + e.getMessage(), e);
             throw new RuntimeException("Error uploading to S3", e);
+        }
+    }
+
+    @Override
+    public void deleteMediaItem(String s3Key) {
+        try {
+            if (doesObjectExist(s3Key)) {
+                s3Client.deleteObject(bucketName, s3Key);
+                logger.info("Deleted media item with key: " + s3Key);
+            } else {
+                logger.warn("Media item with key: " + s3Key + " does not exist.");
+            }
+        } catch (Exception e) {
+            logger.error("Error deleting S3 object with key: " + s3Key, e);
+            throw new RuntimeException("Error deleting media item from S3", e);
         }
     }
 

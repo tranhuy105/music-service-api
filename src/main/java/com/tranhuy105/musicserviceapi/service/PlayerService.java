@@ -47,7 +47,7 @@ public class PlayerService {
 
             session.getItemQueue().addFirst(new QueueItem(trackId, QueueItem.ItemType.TRACK));
             adService.processAdService(user, session);
-            URL url = processToNextItemInQueue(session);
+            URL url = processToNextItemInQueue(session, user.getIsPremium());
             session.resetHistoryIndex();
 
             if ((!Objects.equals(streamingSource, session.getStreamingSource()) || session.getItemQueue().isEmpty())) {
@@ -75,7 +75,7 @@ public class PlayerService {
             session.validateDevice(deviceId);
             queueService.ensureQueueIsNotEmpty(session);
             adService.processAdService(user, session);
-            URL url = processToNextItemInQueue(session);
+            URL url = processToNextItemInQueue(session, user.getIsPremium());
             session.resetHistoryIndex();
             cacheService.cacheStreamingSession(user.getId(), session);
             return url;
@@ -94,12 +94,12 @@ public class PlayerService {
 
             Optional<TrackDetail> prevTrack = getTrackFromHistory(user, session.getHistoryIndex());
             if (prevTrack.isEmpty()){
-                return storageService.generateUrl(session.getCurrentMedia());
+                return storageService.generateUrl(session.getCurrentMedia(), user.getIsPremium());
             }
 
             switchSessionTrack(session, prevTrack.get());
             cacheService.cacheStreamingSession(user.getId(), session);
-            return storageService.generateUrl(session.getCurrentMedia());
+            return storageService.generateUrl(session.getCurrentMedia(), user.getIsPremium());
         });
     }
 
@@ -176,18 +176,18 @@ public class PlayerService {
         return Optional.empty();
     }
 
-    private URL processToNextItemInQueue(StreamingSession session) {
+    private URL processToNextItemInQueue(StreamingSession session, boolean isPremium) {
         QueueItem nextItem = session.getItemQueue().poll();
         if (nextItem == null) return null;
         if (nextItem.itemType() == QueueItem.ItemType.AD) {
             Advertisement ad = adService.getAdById(nextItem.id());
             adService.handleAdPlayback(ad, session);
-            return storageService.generateUrl(ad);
+            return storageService.generateUrl(ad, isPremium);
         } else {
             TrackDetail nextTrack = trackService.findTrackById(nextItem.id());
             session.resetHistoryIndex();
             switchSessionTrack(session, nextTrack);
-            return storageService.generateUrl(nextTrack);
+            return storageService.generateUrl(nextTrack, isPremium);
         }
     }
 

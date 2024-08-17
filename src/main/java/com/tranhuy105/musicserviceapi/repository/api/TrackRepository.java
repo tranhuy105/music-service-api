@@ -18,11 +18,17 @@ public interface TrackRepository {
 
     Page<TrackDetail> findAllTrack(QueryOptions queryOptions);
 
-    List<Track> findTrackRawByAlbumId(Long albumId);
-
     List<TrackDetail> findTopTrackByArtistId(Long artistId, int limit);
 
+    List<Track> findTrackRawByAlbumId(Long albumId);
+
     Long insert(CreateTrackRequestDto dto);
+
+    Optional<Track> findRawTrackById(Long trackId);
+
+    void updateTrack(Track track);
+
+    void deleteTrack(Long trackId);
 
     List<TrackQueueDto> findTrackQueueFromPlaylist(@NonNull Long playlistId);
     List<TrackQueueDto> findTrackQueueFromAlbum(@NonNull Long albumId);
